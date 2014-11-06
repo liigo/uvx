@@ -2,7 +2,7 @@
 #define __LIIGO_UVX_H__
 
 #ifdef __cplusplus
-	extern "C"	{
+extern "C"	{
 #endif
 
 #include <stdlib.h>
@@ -222,20 +222,20 @@ typedef struct uvx_log_t {
 int uvx_log_start(uvx_log_t* xlog, uv_loop_t* loop, const char* target_ip, int target_port, const char* name);
 
 // send a log to target_ip:target_port.
-// level: see UVX_LOG_*; msg: log content text; tags: comma separated text.
+// level: see UVX_LOG_*; tags: comma separated text; msg: log content text.
 // file and line: the source file path+name and line number.
-// maybe truncates the msg/tags/file text, if too long.
+// parameter tags/msg/file can be NULL, and may be truncated if too long.
 // returns 1 on success, or 0 if fails.
-int uvx_log_send(uvx_log_t* xlog, int level, const char* msg, const char* tags, const char* file, int line);
+int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, const char* file, int line);
 
 // to enable (if enabled==1) or disable (if enabled==0) the log
 void uvx_log_enable(uvx_log_t* xlog, int enabled);
 
 // defines data struct that is sent out through udp.
 // the size of this struct and its extra block is guaranted not exceed 1000 bytes (UVX_LOGNODE_MAXBUF) by default.
-// TODO: align? endian?
+// TODO: align? endian? (TODO: 1 byte align, little-endian)
 typedef struct uvx_log_node_t {
-    uint8_t  version;
+    uint8_t  version; // the current version is 1
     uint8_t  magic1, magic2; // must be 0xa1, 0x09
     int8_t   level; // UVX_LOG_*
     int32_t  time, pid, tid, line;
@@ -246,6 +246,12 @@ typedef struct uvx_log_node_t {
 
 // the max size of single log node data, see uvx_log_node_t
 #define UVX_LOGNODE_MAXBUF 1000
+
+#define UVX_LOG(log,level,tags,msgfmt,...) {\
+        char _uvx_tmp_msg_[1024]; /* avoid duplication of name with out-scope names */ \
+        snprintf(_uvx_tmp_msg_, sizeof(_uvx_tmp_msg_), msgfmt, __VA_ARGS__);\
+        uvx_log_send(log, level, tags, _uvx_tmp_msg_, __FILE__, __LINE__);\
+    }
 
 
 //-----------------------------------------------
@@ -267,7 +273,7 @@ const char* uvx_get_tcp_ip_port(uv_tcp_t* uvclient, char* ipbuf, int buflen, int
 int uvx_send_mem(automem_t* mem, uv_stream_t* stream);
 
 #ifdef __cplusplus
-	} // extern "C"
+} // extern "C"
 #endif
 
 #endif //__LIIGO_UVX_H__

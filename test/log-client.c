@@ -27,7 +27,8 @@ static void on_timer(uv_timer_t* handle) {
 
     uint64_t elapsed_time = uv_hrtime(); // ns
     for(int i = 0; i < bench; i++) {
-        uvx_log_send(&xlog, UVX_LOG_INFO, msg, "xlog,test,liigo", "/home/liigo/source.c", i + 1);
+        // uvx_log_send(&xlog, UVX_LOG_INFO, "xlog,test,liigo", msg, "/home/liigo/source.c", i + 1);
+        UVX_LOG(&xlog, UVX_LOG_INFO, "xlog,test,liigo", "Log content: %s", msg);
     }
     printf("sent %d logs, elapsed time: %"_UINT64_FMT" us (1000us = 1ms).\n", bench, (uv_hrtime() - elapsed_time) / 1000);
 }

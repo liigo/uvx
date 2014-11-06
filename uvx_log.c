@@ -52,7 +52,7 @@ static char* write_str(char* buf, const char* buf_end, const char* str) {
     }
 }
 
-int uvx_log_send(uvx_log_t* xlog, int level, const char* msg, const char* tags, const char* file, int line) {
+int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, const char* file, int line) {
     char buf[UVX_LOGNODE_MAXBUF];
     uvx_log_node_t* node = (uvx_log_node_t*) buf;
     char* extra = buf + sizeof(uvx_log_node_t);
@@ -62,9 +62,9 @@ int uvx_log_send(uvx_log_t* xlog, int level, const char* msg, const char* tags, 
     assert(UVX_LOGNODE_MAXBUF > sizeof(uvx_log_node_t) && "check UVX_LOGNODE_MAXBUF size");
     if(!xlog->enabled) return 0;
 
-    node->version = 0;
-    node->magic1  = 0xa1;
-    node->magic2  = 0x09;
+    node->version = 1;    // the uvx log protocol version number, increase if `uvx_log_node_t` changed
+    node->magic1  = 0xa1; // a109 ~= alog
+    node->magic2  = 0x09; // which means this is a log :)
     node->level   = (int8_t) level;
 
     node->time = (int32_t) time(NULL);
