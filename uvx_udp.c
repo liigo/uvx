@@ -8,7 +8,7 @@
 
 // Author: Liigo <com.liigo@gmail.com>.
 
-// defines in uvx.h
+// defines in uvx.c
 void uvx__on_alloc_buf(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf);
 
 static void uvx__on_udp_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* buf, const struct sockaddr* addr, unsigned int flags) {

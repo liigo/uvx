@@ -248,7 +248,7 @@ typedef struct uvx_log_node_t {
 #define UVX_LOGNODE_MAXBUF 1000
 
 #define UVX_LOG(log,level,tags,msgfmt,...) {\
-        char _uvx_tmp_msg_[1024]; /* avoid duplication of name with out-scope names */ \
+        char _uvx_tmp_msg_[UVX_LOGNODE_MAXBUF]; /* avoid name-conflict with out-scope names */ \
         snprintf(_uvx_tmp_msg_, sizeof(_uvx_tmp_msg_), msgfmt, __VA_ARGS__);\
         uvx_log_send(log, level, tags, _uvx_tmp_msg_, __FILE__, __LINE__);\
     }
@@ -269,7 +269,7 @@ int uvx_get_raw_ip_port(const struct sockaddr* addr, unsigned char* ipbuf, int* 
 // support IPv4 (buflen = 16) and IPv6 (buflen = 40).
 const char* uvx_get_tcp_ip_port(uv_tcp_t* uvclient, char* ipbuf, int buflen, int* port);
 
-// send mem to a libuv stream. don't use mem any more after this call.
+// send mem to a libuv tcp stream. don't use mem any more after this call.
 int uvx_send_mem(automem_t* mem, uv_stream_t* stream);
 
 #ifdef __cplusplus

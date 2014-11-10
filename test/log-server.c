@@ -12,14 +12,14 @@ static void on_recv(uvx_udp_t* xudp, void* data, ssize_t datalen, const struct s
     char buf[1024];
     uvx_log_node_t* node = (uvx_log_node_t*) data;
     const char* extra = (const char*) (node + 1);
-    snprintf(buf, sizeof(buf), " ver: %d, magic1: 0x%02x, magic2: 0x%02x, level: %d\n"
-                               "time: %d, pid: %d, tid: %d, line: %d\n"
+    snprintf(buf, sizeof(buf), " ver: %d, magic1: 0x%02x, magic2: 0x%02x\n"
+                               "time: %d, level: %d, pid: %d, tid: %d\n"
                                "name: %s, tags: %s\n"
                                " msg: %s\n"
-                               "file: %s : %d\n"
+                               "file: \"%s\" : %d\n"
                                "-------- received logs count: %d --------\n"
-                               , node->version, node->magic1, node->magic2, node->level
-                               , node->time, node->pid, node->tid, node->line
+                               , node->version, node->magic1, node->magic2
+                               , node->time, node->level, node->pid, node->tid
                                , extra + node->name_offset, extra + node->tags_offset
                                , extra + node->msg_offset, extra + node->file_offset, node->line
                                , log_count++
@@ -28,7 +28,6 @@ static void on_recv(uvx_udp_t* xudp, void* data, ssize_t datalen, const struct s
 }
 
 void main(int argc, char** argv) {
-    char* target_ip = NULL;
     uv_loop_t* loop = uv_default_loop();
     uvx_udp_t xudp;
     uvx_udp_config_t config = uvx_udp_default_config(&xudp);

@@ -23,7 +23,7 @@ int interval = 10; // Seconds
 static void on_timer(uv_timer_t* handle) {
     char msg[1024];
     const char* s = "abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ.";
-    snprintf(msg, sizeof(msg), "Log content. (1) %s (2) %s (3) %s (4) %s", s, s, s, s);
+    snprintf(msg, sizeof(msg), "Repeated text: (1) %s (2) %s (3) %s (4) %s", s, s, s, s);
 
     uint64_t elapsed_time = uv_hrtime(); // ns
     for(int i = 0; i < bench; i++) {
