@@ -35,7 +35,25 @@ void uvx_log_enable(uvx_log_t* xlog, int enabled) {
     xlog->enabled = enabled;
 }
 
-// maybe truncates str if buf is not big enough. str can be NULL.
+// find the last leading-byte of a utf-8 encoded character, returns its index in buf.
+// if not find, will returns 0.
+static int rfind_utf8_leading_byte_index(char* buf, int index) {
+    while(index >= 0) {
+        unsigned char c = buf[0];
+        // utf-8 leading bytes: 0-, 110-, 110-, 11110-
+        if(c>>7==0 || c>>5==6 || c>>4==14 || c>>3==30) {
+            return index;
+        }
+        index--;
+    }
+    return 0;
+}
+
+// write str to buf, maybe truncates str if there is no enough space between buf and buf_end.
+// buf and buf_end must be non-NULL, str can be NULL.
+// returns the next available buf to write another str.
+// we ensure that str wrote to buf end with '\0' even it was truncated.
+// we ensure that utf-8 encoded str will not be truncated inside a character.
 static char* write_str(char* buf, const char* buf_end, const char* str) {
     assert(buf <= buf_end);
     if(buf == buf_end)
@@ -44,9 +62,10 @@ static char* write_str(char* buf, const char* buf_end, const char* str) {
         buf[0] = '\0';
         return buf + 1;
     } else {
-        int n = strlen(str);
-        n = UVX_MIN(n, buf_end - buf - 1);
+        int n = strlen(str) + 1;
+        n = UVX_MIN(n, buf_end - buf);
         memcpy(buf, str, n);
+        n = rfind_utf8_leading_byte_index(buf, n);
         buf[n] = '\0';
         return buf + n + 1;
     }

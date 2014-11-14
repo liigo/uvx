@@ -3,9 +3,6 @@ cmake_minimum_required(VERSION 2.6)
 PROJECT(uvx_test)
 
 SET(CMAKE_C_FLAGS "-g -std=gnu99 -pthread -fpic")
-SET(CMAKE_CXX_FLAGS "-g -std=gnu++0x -pthread -fpic")
-
-#O2 -DNDEBUG -Wall -Werror -Werror=parentheses
 
 SET(SERVER_SOURCES
 	../server.c 

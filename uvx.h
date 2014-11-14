@@ -13,7 +13,8 @@ extern "C"	{
 #include "utils/automem.h"
 
 //-----------------------------------------------
-// uvx: a lightweight wrapper of libuv, defines `uvx_server_t`(TCP server), `uvx_client_t`(TCP client) and `uvx_udp_t`(UDP).
+// uvx: a lightweight wrapper of libuv, defines `uvx_server_t`(TCP server),
+// `uvx_client_t`(TCP client) and `uvx_udp_t`(UDP), along with an `uvx_log_t`(UDP logger).
 //
 // - To define a TCP server (which I call it xserver), you're just required to provide
 //   a `uvx_server_config_t` with some params and callbacks, then call `uvx_server_start`.
@@ -25,7 +26,9 @@ extern "C"	{
 // There are a few predefined callbacks, such as on_conn_ok, on_conn_close, on_read, on_heartbeat, etc.
 // All these callbacks are optional. `on_read`/`on_recv` is the most useful callback.
 //
-// by Liigo, 2014-05.
+// by Liigo 2014-11.
+// http://github.com/liigo/uvx
+
 
 //-----------------------------------------------
 // uvx tcp server: `uvx_server_t`
@@ -225,14 +228,16 @@ int uvx_log_start(uvx_log_t* xlog, uv_loop_t* loop, const char* target_ip, int t
 // level: see UVX_LOG_*; tags: comma separated text; msg: log content text.
 // file and line: the source file path+name and line number.
 // parameter tags/msg/file can be NULL, and may be truncated if too long.
+// all text parameters should be utf-8 encoded, or utf-8 compatible.
 // returns 1 on success, or 0 if fails.
 int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, const char* file, int line);
 
 // to enable (if enabled==1) or disable (if enabled==0) the log
 void uvx_log_enable(uvx_log_t* xlog, int enabled);
 
-// defines data struct that is sent out through udp.
-// the size of this struct and its extra block is guaranted not exceed 1000 bytes (UVX_LOGNODE_MAXBUF) by default.
+// defines data layout that is sent out through udp.
+// the size of this struct and its extra data block are guaranted
+// not exceed 1000 bytes (UVX_LOGNODE_MAXBUF) by default.
 // TODO: align? endian? (TODO: 1 byte align, little-endian)
 typedef struct uvx_log_node_t {
     uint8_t  version; // the current version is 1
@@ -241,10 +246,14 @@ typedef struct uvx_log_node_t {
     int32_t  time, pid, tid, line;
     // offsets inside extra block
     uint8_t  name_offset, tags_offset, file_offset, msg_offset;
-    // extra block immediately following this struct
+
+    // extra data block immediately following this struct
 } uvx_log_node_t;
 
 // the max size of single log node data, see uvx_log_node_t
+// you can change it to N manually where sizeof(uvx_log_node_t) < N <= 1452,
+// the most prudent N is not exceed 528, for safe transmission
+// through internet (ipv4/ipv6), without packet fragmentation.
 #define UVX_LOGNODE_MAXBUF 1000
 
 #define UVX_LOG(log,level,tags,msgfmt,...) {\
