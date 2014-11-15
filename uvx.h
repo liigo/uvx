@@ -219,10 +219,10 @@ typedef struct uvx_log_t {
 #define UVX_LOG_FATAL  (int8_t)30
 #define UVX_LOG_NONE   (int8_t)127
 
-// start a log service with a name, ip:port is target address that logs will be sent to.
+// init an uvx log with a name, ip:port is target address that logs will be sent to.
 // please pass in uninitialized xlog. name maybe NULL, default to "xlog".
 // returns 1 on success, or 0 if fails.
-int uvx_log_start(uvx_log_t* xlog, uv_loop_t* loop, const char* target_ip, int target_port, const char* name);
+int uvx_log_init(uvx_log_t* xlog, uv_loop_t* loop, const char* target_ip, int target_port, const char* name);
 
 // send a log to target_ip:target_port.
 // level: see UVX_LOG_*; tags: comma separated text; msg: log content text.

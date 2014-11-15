@@ -42,8 +42,8 @@ void main(int argc, char** argv) {
         interval = atoi(argv[2]); // Seconds
     }
 
-    // start log client
-    uvx_log_start(&xlog, loop, "127.0.0.1", 19730, "xlog-test");
+    // init log client
+    uvx_log_init(&xlog, loop, "127.0.0.1", 19730, "xlog-test");
 
     // start timer
     uv_timer_t timer;

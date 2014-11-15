@@ -6,7 +6,7 @@
 
 #define UVX_MIN(a,b) ((a)<(b)?(a):(b))
 
-int uvx_log_start(uvx_log_t* xlog, uv_loop_t* loop, const char* target_ip, int target_port, const char* name) {
+int uvx_log_init(uvx_log_t* xlog, uv_loop_t* loop, const char* target_ip, int target_port, const char* name) {
     xlog->uvloop = loop;
     assert(target_ip);
     if(strchr(target_ip, ':')) {
