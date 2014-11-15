@@ -235,8 +235,8 @@ int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, 
 // to enable (if enabled==1) or disable (if enabled==0) the log
 void uvx_log_enable(uvx_log_t* xlog, int enabled);
 
-// defines data layout that is sent out through udp.
-// the size of this struct and its extra data block are guaranted
+// defines memory layout of log's data that is sent out through udp.
+// the size of this struct and its extra data block is guaranted
 // not exceed 1000 bytes (UVX_LOGNODE_MAXBUF) by default.
 // TODO: align? endian? (TODO: 1 byte align, little-endian)
 typedef struct uvx_log_node_t {
@@ -250,17 +250,27 @@ typedef struct uvx_log_node_t {
     // extra data block immediately following this struct
 } uvx_log_node_t;
 
-// the max size of single log node data, see uvx_log_node_t
-// you can change it to N manually where sizeof(uvx_log_node_t) < N <= 1452,
-// the most prudent N is not exceed 528, for safe transmission
-// through internet (ipv4/ipv6), without packet fragmentation.
-#define UVX_LOGNODE_MAXBUF 1000
-
+// the UVX_LOG utility macro
+// parameters:
+//   log: an uvx_log_t* which already uvx_log_start()-ed
+//   level: one of UVX_LOG_* consts
+//   tags: comma separated text
+//   msgfmt: the format text for msg, e.g. "something %s %d or else"
+//   ...: the values that match %x in msgfmt
+// examples:
+//   UVX_LOG(&log, UVX_LOG_INFO, "uvx,liigo", "%d %s", 123, "liigo");
+//   UVX_LOG(&log, UVX_LOG_INFO, "uvx,liigo", "pure text without format", NULL);
 #define UVX_LOG(log,level,tags,msgfmt,...) {\
         char _uvx_tmp_msg_[UVX_LOGNODE_MAXBUF]; /* avoid name-conflict with out-scope names */ \
         snprintf(_uvx_tmp_msg_, sizeof(_uvx_tmp_msg_), msgfmt, __VA_ARGS__);\
         uvx_log_send(log, level, tags, _uvx_tmp_msg_, __FILE__, __LINE__);\
     }
+
+// the max size of single log node data, see uvx_log_node_t
+// you can change it to N manually where sizeof(uvx_log_node_t) < N <= 1452,
+// the most prudent N is not exceed 528, for safe transmission
+// through internet (ipv4/ipv6), without packet fragmentation.
+#define UVX_LOGNODE_MAXBUF 1000
 
 
 //-----------------------------------------------
