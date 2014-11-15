@@ -210,14 +210,14 @@ typedef struct uvx_log_t {
 } uvx_log_t;
 
 // predefined log levels
-#define UVX_LOG_ALL    (int8_t)-128
-#define UVX_LOG_TRACE  (int8_t)-20
-#define UVX_LOG_DEBUG  (int8_t)-10
-#define UVX_LOG_INFO   (int8_t)0
-#define UVX_LOG_WARN   (int8_t)10
-#define UVX_LOG_ERROR  (int8_t)20
-#define UVX_LOG_FATAL  (int8_t)30
-#define UVX_LOG_NONE   (int8_t)127
+#define UVX_LOG_ALL    ((int8_t) -128)
+#define UVX_LOG_TRACE  ((int8_t) -60)
+#define UVX_LOG_DEBUG  ((int8_t) -30)
+#define UVX_LOG_INFO   ((int8_t) 0)
+#define UVX_LOG_WARN   ((int8_t) 30)
+#define UVX_LOG_ERROR  ((int8_t) 60)
+#define UVX_LOG_FATAL  ((int8_t) 90)
+#define UVX_LOG_NONE   ((int8_t) 127)
 
 // init an uvx log with a name, ip:port is target address that logs will be sent to.
 // please pass in uninitialized xlog. name maybe NULL, default to "xlog".
