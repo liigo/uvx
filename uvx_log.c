@@ -35,16 +35,47 @@ void uvx_log_enable(uvx_log_t* xlog, int enabled) {
     xlog->enabled = enabled;
 }
 
-// find the last leading-byte of a utf-8 encoded character, returns its index in buf.
-// if not find, will returns 0.
-static int rfind_utf8_leading_byte_index(char* buf, int index) {
-    while(index >= 0) {
+// reverse find a character from specified position
+static const char* strrchr_from(const char* str, int from, char c) {
+    assert(str);
+    while(from > 0 && str[from] != c) {
+        from--;
+    }
+    if(from > 0) {
+        return str + from;
+    } else {
+        return str[from] == c ? str : NULL;
+    }
+}
+
+// we only keep the last at most two directories of the file path.
+// i.e. "/home/liigo/project/src/file.c" => "project/src/file.c"
+static const char* shorten_path(const char* file) {
+    if(file == NULL) return NULL;
+    char slash = '/';
+    const char* last_slash = strrchr(file, slash);
+    if(last_slash == NULL) {
+        slash = '\\';
+        last_slash = strrchr(file, slash);
+    }
+
+    int count = 2;
+    while(last_slash && last_slash != file && count-- > 0) {
+        last_slash = strrchr_from(file, last_slash - file - 1, slash);
+    }
+    return (last_slash && last_slash != file) ? (last_slash + 1) : file;
+}
+
+// from specified position, find the last leading-byte of a utf-8 encoded character,
+// returns its index in buf, or returns 0 if not find.
+static int rfind_utf8_leading_byte_index(char* buf, int from) {
+    while(from >= 0) {
         unsigned char c = buf[0];
-        // utf-8 leading bytes: 0-, 110-, 110-, 11110-
+        // utf-8 leading bytes: 0-, 110-, 1110-, 11110-
         if(c>>7==0 || c>>5==6 || c>>4==14 || c>>3==30) {
-            return index;
+            return from;
         }
-        index--;
+        from--;
     }
     return 0;
 }
@@ -92,23 +123,20 @@ int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, 
     node->line = line;
 
     // fill strings and it's offsets.
-    // the size of first three strings (name/tags/file) can't exceed 255,
+    // the length of first three strings (name/tags/file) can't exceed 255,
     // to make sure the last offset (msg_offset) is valid uint8_t value.
 
     // name and name_offset
     node->name_offset = 0;
-    assert(sizeof(xlog->name) < UVX_MIN(254, extra_end - extra));
+    assert(sizeof(xlog->name) < UVX_MIN(255, extra_end - extra));
     memcpy(extra, xlog->name, xlog->name_len + 1);
     p += xlog->name_len + 1;
     // tags and tags_offset
     node->tags_offset = p - extra;
-    p = write_str(p, extra + 254, tags);
+    p = write_str(p, extra + 255, tags);
     // file and file_offset
     node->file_offset = p - extra;
-    p = write_str(p, extra + 254, file);
-    if(p == extra + 254) {
-        *p++ = '\0';
-    }
+    p = write_str(p, extra + 255, shorten_path(file));
     // msg and msg_offset
     node->msg_offset = p - extra;
     p = write_str(p, extra_end, msg);

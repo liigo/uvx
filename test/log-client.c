@@ -33,6 +33,18 @@ static void on_timer(uv_timer_t* handle) {
     printf("sent %d logs, elapsed time: %"_UINT64_FMT" us (1000us = 1ms).\n", bench, (uv_hrtime() - elapsed_time) / 1000);
 }
 
+static void test_shorten_path() {
+    char* paths[] = {
+        "/a/b/c/d/e/f/g/h/i/file.c",
+         "/home/liigo.c", "/home/liigo/file.c", "/home/liigo/project/file.c",
+        "C:\\users\\liigo.c", "C:\\users\\liigo\\file.c", "C:\\users\\liigo\\project\\file.c",
+        NULL, "", "/", "\\", "C:\\", "liigo.c",
+    };
+    for(int i = 0; i < sizeof(paths)/sizeof(paths[0]); i++) {
+        uvx_log_send(&xlog, UVX_LOG_INFO, "shorten_path", "", paths[i], i);
+    }
+}
+
 void main(int argc, char** argv) {
     loop = uv_default_loop();
     if(argc > 1) {
@@ -44,6 +56,9 @@ void main(int argc, char** argv) {
 
     // init log client
     uvx_log_init(&xlog, loop, "127.0.0.1", 19730, "xlog-test");
+    
+    // test shorten path
+    test_shorten_path();
 
     // start timer
     uv_timer_t timer;
