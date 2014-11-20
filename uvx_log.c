@@ -4,6 +4,13 @@
 
 // Author: Liigo <com.liigo@gmail.com>, 201407.
 
+#ifdef __unix__
+    #include <sys/types.h>
+    #include <unistd.h>
+    #include <sys/syscall.h>  
+    #define gettid() syscall(SYS_gettid)
+#endif
+
 #define UVX_MIN(a,b) ((a)<(b)?(a):(b))
 
 int uvx_log_init(uvx_log_t* xlog, uv_loop_t* loop, const char* target_ip, int target_port, const char* name) {
@@ -25,7 +32,7 @@ int uvx_log_init(uvx_log_t* xlog, uv_loop_t* loop, const char* target_ip, int ta
     xlog->name[n] = '\0';
 
     xlog->enabled = 1;
-    xlog->pid = 0; // TODO: get pid
+    xlog->pid = (int) getpid();
 
     uvx_udp_start(&xlog->xudp, loop, NULL, 0, uvx_udp_default_config(&xlog->xudp));
     return 1;
@@ -119,7 +126,7 @@ int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, 
 
     node->time = (int32_t) time(NULL);
     node->pid = xlog->pid;
-    node->tid = 0; // TODO: get tid
+    node->tid = (int) gettid();
     node->line = line;
 
     // fill strings and it's offsets.
