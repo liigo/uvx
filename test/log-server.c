@@ -13,17 +13,16 @@ static void on_recv(uvx_udp_t* xudp, void* data, ssize_t datalen, const struct s
     uvx_log_node_t* node = (uvx_log_node_t*) data;
     const char* extra = (const char*) (node + 1);
     snprintf(buf, sizeof(buf), " ver: %d, magic1: 0x%02x, magic2: 0x%02x\n"
-                               "time: %d, level: %d, pid: %d, tid: %d\n"
-                               "name: %s, tags: %s\n"
+                               "name: %s, tags: %s, ip: %s\n"
+                               "level: %d, pid: %d, tid: %d, time: %d\n"
                                " msg: %s\n"
-                               "file: \"%s\" : %d\n"
-                               "-------- received logs count: %d --------\n"
-                               , node->version, node->magic1, node->magic2
-                               , node->time, node->level, node->pid, node->tid
-                               , extra + node->name_offset, extra + node->tags_offset
-                               , extra + node->msg_offset, extra + node->file_offset, node->line
-                               , log_count++
-                               );
+                               "file: %s, line: %d\n"
+                               "-------- received logs count: %d --------\n",
+                               node->version, node->magic1, node->magic2,
+                               extra + node->name_offset, extra + node->tags_offset, ip,
+                               node->level, node->pid, node->tid, node->time,
+                               extra + node->msg_offset, extra + node->file_offset, node->line,
+                               log_count++);
     puts(buf);
 }
 
