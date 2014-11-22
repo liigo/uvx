@@ -12,10 +12,10 @@ static void on_recv(uvx_udp_t* xudp, void* data, ssize_t datalen, const struct s
     char buf[1024];
     uvx_log_node_t* node = (uvx_log_node_t*) data;
     const char* extra = (const char*) (node + 1);
-    snprintf(buf, sizeof(buf), " ver: %d, magic1: 0x%02x, magic2: 0x%02x\n"
+    snprintf(buf, sizeof(buf), "ver: %d, magic1: 0x%02x, magic2: 0x%02x\n"
                                "name: %s, tags: %s, ip: %s\n"
                                "level: %d, pid: %d, tid: %d, time: %d\n"
-                               " msg: %s\n"
+                               "msg: %s\n"
                                "file: %s, line: %d\n"
                                "-------- received logs count: %d --------\n",
                                node->version, node->magic1, node->magic2,

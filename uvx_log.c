@@ -116,7 +116,7 @@ int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, 
     const char* extra_end = buf + UVX_LOGNODE_MAXBUF;
     char* p = extra;
 
-    assert(UVX_LOGNODE_MAXBUF > sizeof(uvx_log_node_t) && "check UVX_LOGNODE_MAXBUF size");
+    assert(UVX_LOGNODE_MAXBUF > sizeof(uvx_log_node_t) && "UVX_LOGNODE_MAXBUF is too small");
     if(!xlog->enabled) return 0;
 
     node->version = 1;    // the uvx log protocol version number, increase if `uvx_log_node_t` changed

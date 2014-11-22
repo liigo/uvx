@@ -237,7 +237,7 @@ void uvx_log_enable(uvx_log_t* xlog, int enabled);
 
 // defines memory layout of log's data that is sent out through udp.
 // the size of this struct and its extra data block is guaranted
-// not exceed 1000 bytes (UVX_LOGNODE_MAXBUF) by default.
+// not exceed 1024 bytes (UVX_LOGNODE_MAXBUF) by default.
 // TODO: align? endian? (TODO: 1 byte align, little-endian)
 typedef struct uvx_log_node_t {
     uint8_t  version; // the current version is 1
@@ -266,11 +266,11 @@ typedef struct uvx_log_node_t {
         uvx_log_send(log, level, tags, _uvx_tmp_msg_, __FILE__, __LINE__);\
     }
 
-// the max size of single log node data, see uvx_log_node_t
-// you can change it to N manually where sizeof(uvx_log_node_t) < N <= 1452,
+// the max size of single log node data, see uvx_log_node_t.
+// you can change it to any N manually where sizeof(uvx_log_node_t) < N <= 1452,
 // the most prudent N is not exceed 528, for safe transmission
-// through internet (ipv4/ipv6), without packet fragmentation.
-#define UVX_LOGNODE_MAXBUF 1000
+// through internet (ipv4/ipv6 + UDP), without packet fragmentation.
+#define UVX_LOGNODE_MAXBUF 1024
 
 
 //-----------------------------------------------
