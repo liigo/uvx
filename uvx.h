@@ -219,18 +219,37 @@ typedef struct uvx_log_t {
 #define UVX_LOG_FATAL  ((int8_t) 90)
 #define UVX_LOG_NONE   ((int8_t) 127)
 
-// init an uvx log with a name, ip:port is target address that logs will be sent to.
-// please pass in uninitialized xlog. name maybe NULL, default to "xlog".
+// init an uvx log with uv loop, ip, port and name.
+// please pass in uninitialized xlog. name can be NULL, default to "xlog".
+// logs are sent to its target (target_ip:target_port) through IPv4/IPv6 + UDP.
 // returns 1 on success, or 0 if fails.
 int uvx_log_init(uvx_log_t* xlog, uv_loop_t* loop, const char* target_ip, int target_port, const char* name);
 
-// send a log to target_ip:target_port.
+// send a log to target through UDP.
 // level: see UVX_LOG_*; tags: comma separated text; msg: log content text.
 // file and line: the source file path+name and line number.
 // parameter tags/msg/file can be NULL, and may be truncated if too long.
 // all text parameters should be utf-8 encoded, or utf-8 compatible.
 // returns 1 on success, or 0 if fails.
 int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, const char* file, int line);
+
+// serialize a log into a bytes stream, ready to be sent by `uvx_log_send_serialized` later.
+// buf and bufsize: an output buffer and its size, recommend `UVX_LOGNODE_MAXBUF`, can be smaller or larger.
+// the other parameters are as same as `uvx_log_send`.
+// returns the serialized data size in bytes, which is ensured not exceed bufsize and `UVX_LOGNODE_MAXBUF`.
+// maybe returns 0, which means nothing was serialized (e.g. when the log was disabled).
+// example:
+//   char buf[1024];
+//   unsigned int len = uvx_log_serialize(xlog, buf, sizeof(buf), ...);
+//   uvx_log_send_serialized(xlog, buf, len);
+unsigned int
+uvx_log_serialize(uvx_log_t* xlog, void* buf, unsigned int bufsize,
+                  int level, const char* tags, const char* msg, const char* file, int line);
+
+// send a serialized log to target through UDP.
+// the parameter `data`/`datalen` must be serialized by `uvx_log_serialize` before.
+// returns 1 on success, or 0 if fails.
+int uvx_log_send_serialized(uvx_log_t* xlog, const void* data, unsigned int datalen);
 
 // to enable (if enabled==1) or disable (if enabled==0) the log
 void uvx_log_enable(uvx_log_t* xlog, int enabled);
@@ -250,7 +269,7 @@ typedef struct uvx_log_node_t {
     // extra data block immediately following this struct
 } uvx_log_node_t;
 
-// the UVX_LOG utility macro
+// a printf-like UVX_LOG utility macro, to format and send a log.
 // parameters:
 //   log: an uvx_log_t* which already uvx_log_start()-ed
 //   level: one of UVX_LOG_* consts
@@ -260,10 +279,22 @@ typedef struct uvx_log_node_t {
 // examples:
 //   UVX_LOG(&log, UVX_LOG_INFO, "uvx,liigo", "%d %s", 123, "liigo");
 //   UVX_LOG(&log, UVX_LOG_INFO, "uvx,liigo", "pure text without format", NULL);
-#define UVX_LOG(log,level,tags,msgfmt,...) {\
-        char _uvx_tmp_msg_[UVX_LOGNODE_MAXBUF]; /* avoid name-conflict with out-scope names */ \
+#define UVX_LOG(xlog,level,tags,msgfmt,...) {\
+        char _uvx_tmp_msg_[UVX_LOGNODE_MAXBUF]; /* avoid name-conflict with outer-scope names */ \
         snprintf(_uvx_tmp_msg_, sizeof(_uvx_tmp_msg_), msgfmt, __VA_ARGS__);\
-        uvx_log_send(log, level, tags, _uvx_tmp_msg_, __FILE__, __LINE__);\
+        uvx_log_send(xlog, level, tags, _uvx_tmp_msg_, __FILE__, __LINE__);\
+    }
+
+// only serialize a log, but not send it.
+// `bufsize` will be rewrite to fill in the serialized size.
+// example:
+//   char buf[1024]; int len = sizeof(buf);
+//   UVX_LOG_SERIALIZE(&xlog, buf, len, UVX_LOG_INFO, "serialize", "name: %s, sex: %d", "Liigo", 1);
+//   uvx_log_send_serialized(&xlog, buf, len);
+#define UVX_LOG_SERIALIZE(xlog,buf,bufsize,level,tags,msgfmt,...) {\
+        char _uvx_tmp_msg_[UVX_LOGNODE_MAXBUF]; /* avoid name-conflict with outer-scope names */ \
+        snprintf(_uvx_tmp_msg_, sizeof(_uvx_tmp_msg_), msgfmt, __VA_ARGS__);\
+        bufsize = uvx_log_serialize(xlog, buf, bufsize, level, tags, _uvx_tmp_msg_, __FILE__, __LINE__);\
     }
 
 // the max size of single log node data, see uvx_log_node_t.

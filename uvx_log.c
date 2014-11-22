@@ -109,11 +109,11 @@ static char* write_str(char* buf, const char* buf_end, const char* str) {
     }
 }
 
-int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, const char* file, int line) {
-    char buf[UVX_LOGNODE_MAXBUF];
+unsigned int uvx_log_serialize(uvx_log_t* xlog, void* buf, unsigned int bufsize,
+                               int level, const char* tags, const char* msg, const char* file, int line) {
     uvx_log_node_t* node = (uvx_log_node_t*) buf;
     char* extra = buf + sizeof(uvx_log_node_t);
-    const char* extra_end = buf + UVX_LOGNODE_MAXBUF;
+    const char* extra_end = buf + UVX_MIN(bufsize, UVX_LOGNODE_MAXBUF);
     char* p = extra;
 
     assert(UVX_LOGNODE_MAXBUF > sizeof(uvx_log_node_t) && "UVX_LOGNODE_MAXBUF is too small");
@@ -148,6 +148,18 @@ int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, 
     node->msg_offset = p - extra;
     p = write_str(p, extra_end, msg);
 
+    return (p - (char*)buf);
+}
+
+inline
+int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, const char* file, int line) {
+    char buf[UVX_LOGNODE_MAXBUF];
+    unsigned int size = uvx_log_serialize(xlog, buf, sizeof(buf), level, tags, msg, file, line);
     // send out through udp
-    return uvx_udp_send_to_addr(&xlog->xudp, &xlog->target_addr.addr, buf, p-buf);
+    return uvx_udp_send_to_addr(&xlog->xudp, &xlog->target_addr.addr, buf, size);
+}
+
+inline
+int uvx_log_send_serialized(uvx_log_t* xlog, const void* data, unsigned int datalen) {
+    return uvx_udp_send_to_addr(&xlog->xudp, &xlog->target_addr.addr, data, datalen);
 }

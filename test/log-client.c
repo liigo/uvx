@@ -33,6 +33,12 @@ static void on_timer(uv_timer_t* handle) {
     printf("sent %d logs, elapsed time: %"_UINT64_FMT" us (1000us = 1ms).\n", bench, (uv_hrtime() - elapsed_time) / 1000);
 }
 
+static void test_serialize_log() {
+    char buf[1024]; int len = sizeof(buf);
+    UVX_LOG_SERIALIZE(&xlog, buf, len, UVX_LOG_INFO, "serialize", "file=%s, line=%d", __FILE__, __LINE__);
+    uvx_log_send_serialized(&xlog, buf, len);
+}
+
 static void test_shorten_path() {
     char* paths[] = {
         "/a/b/c/d/e/f/g/h/i/file.c",
@@ -56,13 +62,14 @@ void main(int argc, char** argv) {
 
     // init log client
     uvx_log_init(&xlog, loop, "127.0.0.1", 19730, "xlog-test");
-    
-    // test shorten path
-    test_shorten_path();
 
-    // start timer
+    // some small tests
+    test_shorten_path();
+    test_serialize_log();
+
+    // start a timer
     uv_timer_t timer;
-    
+
     uv_timer_init(loop, &timer);
     uv_timer_start(&timer, on_timer, 0, interval/*seconds*/ * 1000);
 
