@@ -5,7 +5,7 @@ PROJECT(uvx_test)
 SET(CMAKE_C_FLAGS "-g -std=gnu99 -pthread -fpic")
 
 SET(SERVER_SOURCES
-	../server.c 
+	../server.c
 	../../uvx.c
 	../../uvx_server.c
 	../../utils/automem.c
@@ -17,7 +17,7 @@ TARGET_LINK_LIBRARIES(server uv pthread rt)
 
 
 SET(CLIENT_SOURCES
-	../client.c 
+	../client.c
 	../../uvx.c
 	../../uvx_client.c
 	../../utils/automem.c
@@ -44,6 +44,7 @@ SET(LOGC_SOURCES
 	../../uvx.c
 	../../uvx_log.c
 	../../uvx_udp.c
+	../../loge/loge.c
 	../../utils/automem.c
 	../../utils/linkhash.c
 )
@@ -55,6 +56,7 @@ SET(LOGS_SOURCES
 	../log-server.c
 	../../uvx.c
 	../../uvx_udp.c
+	../../loge/loge.c
 	../../utils/automem.c
 	../../utils/linkhash.c
 )

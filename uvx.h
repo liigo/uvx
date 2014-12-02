@@ -10,6 +10,7 @@ extern "C"	{
 #include <string.h>
 #include <memory.h>
 #include <uv.h>
+#include "loge/loge.h"
 #include "utils/automem.h"
 
 //-----------------------------------------------
@@ -88,7 +89,7 @@ uvx_server_config_t uvx_server_default_config(uvx_server_t* xserver);
 // returns 1 on success, or 0 if fails.
 int uvx_server_start(uvx_server_t* xserver, uv_loop_t* loop, const char* ip, int port, uvx_server_config_t config);
 
-// shutdown an xserver normally. 
+// shutdown an xserver normally.
 // returns 1 on success, or 0 if fails.
 int uvx_server_shutdown(uvx_server_t* xserver);
 
@@ -196,28 +197,25 @@ int uvx_udp_shutdown(uvx_udp_t* xudp);
 
 typedef struct uvx_log_t {
     uv_loop_t* uvloop;
-    char name[16];
-    int enabled; // 1: enabled, 0: disabled
-    int pid;
     uvx_udp_t xudp;
     union {
         struct sockaddr     addr;
         struct sockaddr_in  addr4;
         struct sockaddr_in6 addr6;
     } target_addr;
-    
-    int name_len;
+
+    loge_t loge;
 } uvx_log_t;
 
 // predefined log levels
-#define UVX_LOG_ALL    ((int8_t) -128)
-#define UVX_LOG_TRACE  ((int8_t) -60)
-#define UVX_LOG_DEBUG  ((int8_t) -30)
-#define UVX_LOG_INFO   ((int8_t) 0)
-#define UVX_LOG_WARN   ((int8_t) 30)
-#define UVX_LOG_ERROR  ((int8_t) 60)
-#define UVX_LOG_FATAL  ((int8_t) 90)
-#define UVX_LOG_NONE   ((int8_t) 127)
+#define UVX_LOG_ALL    LOGE_LOG_ALL
+#define UVX_LOG_TRACE  LOGE_LOG_TRACE
+#define UVX_LOG_DEBUG  LOGE_LOG_DEBUG
+#define UVX_LOG_INFO   LOGE_LOG_INFO
+#define UVX_LOG_WARN   LOGE_LOG_WARN
+#define UVX_LOG_ERROR  LOGE_LOG_ERROR
+#define UVX_LOG_FATAL  LOGE_LOG_FATAL
+#define UVX_LOG_NONE   LOGE_LOG_NONE
 
 // init an uvx log with uv loop, ip, port and name.
 // please pass in uninitialized xlog. name can be NULL, default to "xlog".
@@ -234,42 +232,28 @@ int uvx_log_init(uvx_log_t* xlog, uv_loop_t* loop, const char* target_ip, int ta
 // note: be limited by libuv, we should call `uvx_log_send` only in its main loop thread.
 int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, const char* file, int line);
 
-// serialize a log into a bytes stream, ready to be sent by `uvx_log_send_serialized` later.
-// buf and bufsize: an output buffer and its size, recommend `UVX_LOGNODE_MAXBUF`, can be smaller or larger.
+// encode a log into bytes stream, ready to be sent by `uvx_log_send_encoded` later.
+// buf and bufsize: an output buffer and its size, recommend 1024, can be smaller or larger.
 // the other parameters are as same as `uvx_log_send`.
-// returns the serialized data size in bytes, which is ensured not exceed bufsize and `UVX_LOGNODE_MAXBUF`.
+// returns the encoded data size in bytes, which is ensure not exceed bufsize and 1024.
 // maybe returns 0, which means nothing was serialized (e.g. when the log was disabled).
 // example:
 //   char buf[1024];
-//   unsigned int len = uvx_log_serialize(xlog, buf, sizeof(buf), ...);
-//   uvx_log_send_serialized(xlog, buf, len);
+//   unsigned int len = uvx_log_encode(xlog, buf, sizeof(buf), ...);
+//   uvx_log_send_encoded(xlog, buf, len);
 unsigned int
-uvx_log_serialize(uvx_log_t* xlog, void* buf, unsigned int bufsize,
-                  int level, const char* tags, const char* msg, const char* file, int line);
+uvx_log_encode(uvx_log_t* xlog, void* buf, unsigned int bufsize,
+               int level, const char* tags, const char* msg, const char* file, int line);
 
 // send a serialized log to target through UDP.
 // the parameter `data`/`datalen` must be serialized by `uvx_log_serialize` before.
 // returns 1 on success, or 0 if fails.
 // note: be limited by libuv, we should call `uvx_log_send_serialized` only in its main loop thread.
-int uvx_log_send_serialized(uvx_log_t* xlog, const void* data, unsigned int datalen);
+int uvx_log_send_encoded(uvx_log_t* xlog, const void* data, unsigned int datalen);
 
 // to enable (if enabled==1) or disable (if enabled==0) the log
 void uvx_log_enable(uvx_log_t* xlog, int enabled);
 
-// defines memory layout of log's data that is sent out through udp.
-// the size of this struct and its extra data block is guaranted
-// not exceed 1024 bytes (UVX_LOGNODE_MAXBUF) by default.
-// TODO: align? endian? (TODO: 1 byte align, little-endian)
-typedef struct uvx_log_node_t {
-    uint8_t  version; // the current version is 1
-    uint8_t  magic1, magic2; // must be 0xa1, 0x09
-    int8_t   level; // UVX_LOG_*
-    int32_t  time, pid, tid, line;
-    // offsets inside extra block
-    uint8_t  name_offset, tags_offset, file_offset, msg_offset;
-
-    // extra data block immediately following this struct
-} uvx_log_node_t;
 
 // a printf-like UVX_LOG utility macro, to format and send a log.
 // parameters:
@@ -282,28 +266,22 @@ typedef struct uvx_log_node_t {
 //   UVX_LOG(&log, UVX_LOG_INFO, "uvx,liigo", "%d %s", 123, "liigo");
 //   UVX_LOG(&log, UVX_LOG_INFO, "uvx,liigo", "pure text without format", NULL);
 #define UVX_LOG(xlog,level,tags,msgfmt,...) {\
-        char _uvx_tmp_msg_[UVX_LOGNODE_MAXBUF]; /* avoid name-conflict with outer-scope names */ \
-        snprintf(_uvx_tmp_msg_, sizeof(_uvx_tmp_msg_), msgfmt, __VA_ARGS__);\
-        uvx_log_send(xlog, level, tags, _uvx_tmp_msg_, __FILE__, __LINE__);\
+        char uvx_tmp_msg_[LOGE_MAXBUF]; /* avoid name conflict with outer-scope names */ \
+        snprintf(uvx_tmp_msg_, sizeof(uvx_tmp_msg_), msgfmt, __VA_ARGS__);\
+        uvx_log_send(xlog, level, tags, uvx_tmp_msg_, __FILE__, __LINE__);\
     }
 
 // only serialize a log, but not send it.
 // `bufsize` will be rewrite to fill in the serialized size.
 // example:
-//   char buf[1024]; int len = sizeof(buf);
-//   UVX_LOG_SERIALIZE(&xlog, buf, len, UVX_LOG_INFO, "serialize", "name: %s, sex: %d", "Liigo", 1);
-//   uvx_log_send_serialized(&xlog, buf, len);
-#define UVX_LOG_SERIALIZE(xlog,buf,bufsize,level,tags,msgfmt,...) {\
-        char _uvx_tmp_msg_[UVX_LOGNODE_MAXBUF]; /* avoid name-conflict with outer-scope names */ \
-        snprintf(_uvx_tmp_msg_, sizeof(_uvx_tmp_msg_), msgfmt, __VA_ARGS__);\
-        bufsize = uvx_log_serialize(xlog, buf, bufsize, level, tags, _uvx_tmp_msg_, __FILE__, __LINE__);\
+//   char buf[1024]; unsigned int len = sizeof(buf);
+//   UVX_LOG_ENCODE(&xlog, buf, len, UVX_LOG_INFO, "author", "name: %s, sex: %d", "Liigo", 1);
+//   uvx_log_send_encoded(&xlog, buf, len);
+#define UVX_LOG_ENCODE(xlog,buf,bufsize,level,tags,msgfmt,...) {\
+        char uvx_tmp_msg_[LOGE_MAXBUF]; /* avoid name conflict with outer-scope names */ \
+        snprintf(uvx_tmp_msg_, sizeof(uvx_tmp_msg_), msgfmt, __VA_ARGS__);\
+        bufsize = uvx_log_encode(xlog, buf, bufsize, level, tags, uvx_tmp_msg_, __FILE__, __LINE__);\
     }
-
-// the max size of single log node data, see uvx_log_node_t.
-// you can change it to any N manually where sizeof(uvx_log_node_t) < N <= 1452,
-// the most prudent N is not exceed 528, for safe transmission
-// through internet (ipv4/ipv6 + UDP), without packet fragmentation.
-#define UVX_LOGNODE_MAXBUF 1024
 
 
 //-----------------------------------------------

@@ -10,6 +10,7 @@ SET(UVX_SOURCES
 	../uvx_client.c
 	../uvx_udp.c
 	../uvx_log.c
+	../loge/loge.c
 	../utils/automem.c
 	../utils/linkhash.c
 )
