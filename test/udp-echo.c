@@ -2,11 +2,11 @@
 #include <string.h>
 #include <unistd.h>
 
-// ÔËĞĞ±¾³ÌĞòµÄÁ½¸ö½ø³Ì£º
-// µÚÒ»¸ö£º./udpecho
-// µÚ¶ş¸ö: ./udpecho 127.0.0.1
-// È»ºóÁ½Õß»á»¥·¢ĞÅÏ¢£¨Ò»·½ÊÕµ½ÏûÏ¢»áÁ¢¿Ì´ğ¸´¸ø¶Ô·½£©£¬Èç´ËÎŞÏŞÑ­»·ÏÂÈ¥
-// ×÷Õß: Liigo <com.liigo@gmail.com>
+// è¿è¡Œæœ¬ç¨‹åºçš„ä¸¤ä¸ªè¿›ç¨‹ï¼š
+// ç¬¬ä¸€ä¸ªï¼š./udpecho
+// ç¬¬äºŒä¸ª: ./udpecho 127.0.0.1
+// ç„¶åä¸¤è€…ä¼šäº’å‘ä¿¡æ¯ï¼ˆä¸€æ–¹æ”¶åˆ°æ¶ˆæ¯ä¼šç«‹åˆ»ç­”å¤ç»™å¯¹æ–¹ï¼‰ï¼Œå¦‚æ­¤æ— é™å¾ªç¯ä¸‹å»
+// ä½œè€…: Liigo <com.liigo@gmail.com>
 
 static void on_recv(uvx_udp_t* xudp, void* data, ssize_t datalen, const struct sockaddr* addr, unsigned int flag) {
     char ip[16]; int port; uvx_get_ip_port(addr, ip, sizeof(ip), &port);
@@ -26,10 +26,10 @@ void main(int argc, char** argv) {
 
     if(argc > 1) target_ip = argv[1];
     if(target_ip == NULL) {
-        uvx_udp_start(&xudp, loop, "0.0.0.0", 8008, config); // °ó¶¨¹Ì¶¨¶Ë¿Ú
+        uvx_udp_start(&xudp, loop, "0.0.0.0", 8008, config); // ç»‘å®šå›ºå®šç«¯å£
     } else {
-        uvx_udp_start(&xudp, loop, NULL, 0, config); // °ó¶¨Ëæ»ú¶Ë¿Ú
-        uvx_udp_send_to_ip(&xudp, target_ip, 8008, "1", 2); // Æô¶¯ÏûÏ¢»¥·¢¶¯×÷£¬Åö×²Ê½Ó¦´ğ
+        uvx_udp_start(&xudp, loop, NULL, 0, config); // ç»‘å®šéšæœºç«¯å£
+        uvx_udp_send_to_ip(&xudp, target_ip, 8008, "1", 2); // å¯åŠ¨æ¶ˆæ¯äº’å‘åŠ¨ä½œï¼Œç¢°æ’å¼åº”ç­”
     }
 
     uv_run(loop, UV_RUN_DEFAULT);

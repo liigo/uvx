@@ -8,6 +8,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include "utils/automem.h"
+
 // Author: Liigo <com.liigo@gmail.com>.
 
 const char* uvx_get_ip_port(const struct sockaddr* addr, char* ipbuf, int buflen, int* port) {
@@ -62,6 +64,31 @@ const char* uvx_get_tcp_ip_port(uv_tcp_t* uvclient, char* ipbuf, int buflen, int
         printf("\n!!! [uvx] get client ip fails: %s\n", uv_strerror(r));
 		return NULL;
 	}
+}
+
+static void uvx_after_send_mem(uv_write_t* w, int status) {
+    if(status) {
+        puts("\n!!! [uvx] uvx_after_send_mem(,-1) failed");
+    }
+
+    //see uxv_send_mem()
+    automem_t mem;
+    mem.pdata = (unsigned char*)w->data;
+    automem_uninit(&mem);
+
+    free(w);
+}
+
+// Note: after invoke uvx_send_mem(), do not use mem anymore, its memory will be freed later.
+int uvx_send_mem(automem_t* mem, uv_stream_t* stream) {
+    // puts("uvx_send_mem()\n");
+    assert(mem && mem->pdata);
+    assert(stream);
+    uv_buf_t buf = { .base = (char*)mem->pdata, .len = (size_t)mem->size };
+    uv_write_t* w = (uv_write_t*) malloc(sizeof(uv_write_t));
+    memset(w, 0, sizeof(uv_write_t));
+    w->data = mem->pdata; // free it in after_send_mem()
+    return uv_write(w, stream, &buf, 1, uvx_after_send_mem);
 }
 
 //-----------------------------------------------------------------------------

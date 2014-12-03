@@ -24,31 +24,6 @@ static void uvx__on_connection(uv_stream_t* uvserver, int status);
 static void _uv_disconnect_client(uv_stream_t* uvclient);
 static void _uv_after_close_connection(uv_handle_t* handle);
 
-void uvx_after_send_mem(uv_write_t* w, int status) {
-	if(status) {
-		puts("\n!!! [uvx] uvx_after_send_mem(,-1) failed");
-	}
-
-	//see uxv_send_mem()
-	automem_t mem;
-	mem.pdata = (unsigned char*)w->data;
-	automem_uninit(&mem);
-
-	free(w);
-}
-
-// Note: after invoke uvx_send_mem(), do not use mem anymore, its memory will be freed later.
-int uvx_send_mem(automem_t* mem, uv_stream_t* stream) {
-	// puts("uvx_send_mem()\n");
-	assert(mem && mem->pdata);
-	assert(stream);
-	uv_buf_t buf = { .base = (char*)mem->pdata, .len = (size_t)mem->size };
-	uv_write_t* w = (uv_write_t*) malloc(sizeof(uv_write_t));
-	memset(w, 0, sizeof(uv_write_t));
-	w->data = mem->pdata; // free it in after_send_mem()
-	return uv_write(w, stream, &buf, 1, uvx_after_send_mem);
-}
-
 uvx_server_config_t uvx_server_default_config(uvx_server_t* xserver) {
     uvx_server_config_t config = { 0 };
     snprintf(config.name, sizeof(config.name), "xserver-%p", xserver);
@@ -183,7 +158,7 @@ static void uvx__on_connection(uv_stream_t* uvserver, int status) {
 		    fprintf(xserver->config.log_out, "[uvx-server] %s on connection\n", xserver->config.name);
 		assert(uvserver == (uv_stream_t*) &xserver->uvserver);
         assert(xserver->config.conn_extra_size >= 0);
-        
+
         // Create new connection
 		uvx_server_conn_t* conn = (uvx_server_conn_t*) calloc(1, sizeof(uvx_server_conn_t) + xserver->config.conn_extra_size);
         if(xserver->config.conn_extra_size > 0)
