@@ -10,7 +10,8 @@ int bench = 1;
 int interval = 10; // Seconds
 
 static void on_heartbeat(uvx_client_t* xclient, unsigned int index) {
-    static char data[] = {'u','v','x','-','s','e','v','e','r',',','b','y','l','i','i','g','o','\n'};
+    static char data[] = {'u','v','x','-','s','e','r','v','e','r',',',
+                          'b','y',' ','l','i','i','g','o','\n'};
     printf("send %d datas\n", bench);
     for(int i = 0; i < bench; i++) {
         automem_t mem; automem_init(&mem, 32);

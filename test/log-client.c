@@ -47,7 +47,7 @@ static void test_shorten_path() {
         NULL, "", "/", "\\", "C:\\", "liigo.c",
     };
     for(int i = 0; i < sizeof(paths)/sizeof(paths[0]); i++) {
-        uvx_log_send(&xlog, UVX_LOG_INFO, "shorten_path", "", paths[i], i);
+        uvx_log_send(&xlog, UVX_LOG_INFO, "shorten_path", paths[i], paths[i], i);
     }
 }
 

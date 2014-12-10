@@ -1,0 +1,3 @@
+[submodule "loge"]
+	path = loge
+	url = https://github.com/liigo/loge.git
