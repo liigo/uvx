@@ -24,8 +24,8 @@ void uvx_log_enable(uvx_log_t* xlog, int enabled) {
 }
 
 inline unsigned int
-uvx_log_encode(uvx_log_t* xlog, void* buf, unsigned int bufsize,
-               int level, const char* tags, const char* msg, const char* file, int line) {
+uvx_log_serialize(uvx_log_t* xlog, void* buf, unsigned int bufsize,
+                  int level, const char* tags, const char* msg, const char* file, int line) {
     return loge_item(&xlog->loge, buf, bufsize, level, tags, msg, file, line);
 }
 
@@ -38,6 +38,6 @@ int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, 
 }
 
 inline
-int uvx_log_send_encoded(uvx_log_t* xlog, const void* data, unsigned int datalen) {
+int uvx_log_send_serialized(uvx_log_t* xlog, const void* data, unsigned int datalen) {
     return uvx_udp_send_to_addr(&xlog->xudp, &xlog->target_addr.addr, data, datalen);
 }

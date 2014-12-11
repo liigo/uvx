@@ -23,6 +23,7 @@ extern "C"	{
 //   a `uvx_client_config_t` with some params and callbacks, then call `uvx_client_connect`.
 // - To define an UDP service (which I call it xudp), you're just required to provide
 //   a `uvx_udp_config_t` with some params and callbacks, then call `uvx_udp_start`.
+// - To define a logging service (which I call it xlog), just call `uvx_log_init`.
 //
 // There are a few predefined callbacks, such as on_conn_ok, on_conn_close, on_read, on_heartbeat, etc.
 // All these callbacks are optional. `on_read`/`on_recv` is the most useful callback.
@@ -232,24 +233,24 @@ int uvx_log_init(uvx_log_t* xlog, uv_loop_t* loop, const char* target_ip, int ta
 // note: be limited by libuv, we should call `uvx_log_send` only in its main loop thread.
 int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, const char* file, int line);
 
-// encode a log into bytes stream, ready to be sent by `uvx_log_send_encoded` later.
+// serialize a log into bytes stream, ready to be sent by `uvx_log_send_serialized` later.
 // buf and bufsize: an output buffer and its size, recommend 1024, can be smaller or larger.
 // the other parameters are as same as `uvx_log_send`.
-// returns the encoded data size in bytes, which is ensure not exceed bufsize and 1024.
+// returns the serialized data size in bytes, which is ensure not exceed bufsize and 1024.
 // maybe returns 0, which means nothing was serialized (e.g. when the log was disabled).
 // example:
 //   char buf[1024];
-//   unsigned int len = uvx_log_encode(xlog, buf, sizeof(buf), ...);
-//   uvx_log_send_encoded(xlog, buf, len);
+//   unsigned int len = uvx_log_serialize(xlog, buf, sizeof(buf), ...);
+//   uvx_log_send_serialized(xlog, buf, len);
 unsigned int
-uvx_log_encode(uvx_log_t* xlog, void* buf, unsigned int bufsize,
-               int level, const char* tags, const char* msg, const char* file, int line);
+uvx_log_serialize(uvx_log_t* xlog, void* buf, unsigned int bufsize,
+                  int level, const char* tags, const char* msg, const char* file, int line);
 
 // send a serialized log to target through UDP.
 // the parameter `data`/`datalen` must be serialized by `uvx_log_serialize` before.
 // returns 1 on success, or 0 if fails.
 // note: be limited by libuv, we should call `uvx_log_send_serialized` only in its main loop thread.
-int uvx_log_send_encoded(uvx_log_t* xlog, const void* data, unsigned int datalen);
+int uvx_log_send_serialized(uvx_log_t* xlog, const void* data, unsigned int datalen);
 
 // to enable (if enabled==1) or disable (if enabled==0) the log
 void uvx_log_enable(uvx_log_t* xlog, int enabled);
@@ -261,7 +262,7 @@ void uvx_log_enable(uvx_log_t* xlog, int enabled);
 //   level: one of UVX_LOG_* consts
 //   tags: comma separated text
 //   msgfmt: the format text for msg, e.g. "something %s %d or else"
-//   ...: the values that match %x in msgfmt
+//   ...: the values that match %* in msgfmt
 // examples:
 //   UVX_LOG(&log, UVX_LOG_INFO, "uvx,liigo", "%d %s", 123, "liigo");
 //   UVX_LOG(&log, UVX_LOG_INFO, "uvx,liigo", "pure text without format", NULL);
@@ -275,12 +276,12 @@ void uvx_log_enable(uvx_log_t* xlog, int enabled);
 // `bufsize` will be rewrite to fill in the serialized size.
 // example:
 //   char buf[1024]; unsigned int len = sizeof(buf);
-//   UVX_LOG_ENCODE(&xlog, buf, len, UVX_LOG_INFO, "author", "name: %s, sex: %d", "Liigo", 1);
-//   uvx_log_send_encoded(&xlog, buf, len);
-#define UVX_LOG_ENCODE(xlog,buf,bufsize,level,tags,msgfmt,...) {\
+//   UVX_LOG_SERIALIZE(&xlog, buf, len, UVX_LOG_INFO, "author", "name: %s, sex: %d", "Liigo", 1);
+//   uvx_log_send_serialized(&xlog, buf, len);
+#define UVX_LOG_SERIALIZE(xlog,buf,bufsize,level,tags,msgfmt,...) {\
         char uvx_tmp_msg_[LOGE_MAXBUF]; /* avoid name conflict with outer-scope names */ \
         snprintf(uvx_tmp_msg_, sizeof(uvx_tmp_msg_), msgfmt, __VA_ARGS__);\
-        bufsize = uvx_log_encode(xlog, buf, bufsize, level, tags, uvx_tmp_msg_, __FILE__, __LINE__);\
+        bufsize = uvx_log_serialize(xlog, buf, bufsize, level, tags, uvx_tmp_msg_, __FILE__, __LINE__);\
     }
 
 

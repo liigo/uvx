@@ -33,10 +33,10 @@ static void on_timer(uv_timer_t* handle) {
     printf("sent %d logs, elapsed time: %"_UINT64_FMT" us (1000us = 1ms).\n", bench, (uv_hrtime() - elapsed_time) / 1000);
 }
 
-static void test_encode_log() {
+static void test_serialize_log() {
     char buf[1024]; unsigned int len = sizeof(buf);
-    UVX_LOG_ENCODE(&xlog, buf, len, UVX_LOG_INFO, "encode", "file=%s, line=%d", __FILE__, __LINE__);
-    uvx_log_send_encoded(&xlog, buf, len);
+    UVX_LOG_SERIALIZE(&xlog, buf, len, UVX_LOG_INFO, "encode", "file=%s, line=%d", __FILE__, __LINE__);
+    uvx_log_send_serialized(&xlog, buf, len);
 }
 
 static void test_shorten_path() {
@@ -65,7 +65,7 @@ void main(int argc, char** argv) {
 
     // some small tests
     test_shorten_path();
-    test_encode_log();
+    test_serialize_log();
 
     // start a timer
     uv_timer_t timer;
