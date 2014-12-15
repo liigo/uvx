@@ -126,8 +126,8 @@ static void uvx__on_read(uv_stream_t* uvclient, ssize_t nread, const uv_buf_t* b
         assert(n == 0); //delete success
         lh_table_insert(_UVX_S_PRIVATE(xserver)->conns, conn, (const void*)conn);
 
-        if(xserver->config.on_read)
-            xserver->config.on_read(xserver, conn, buf->base, nread);
+        if(xserver->config.on_recv)
+            xserver->config.on_recv(xserver, conn, buf->base, nread);
 	} else if(nread < 0) {
 		if(xserver->config.log_err)
         fprintf(xserver->config.log_err, "\n!!! [uvx-server] %s on read error: %s\n", xserver->config.name, uv_strerror(nread));

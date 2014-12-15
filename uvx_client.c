@@ -117,8 +117,8 @@ static void uvx__on_client_read(uv_stream_t* uvserver, ssize_t nread, const uv_b
 
 	if(nread > 0) {
         assert(xclient->uvserver == (uv_tcp_t*)uvserver);
-        if(xclient->config.on_read)
-            xclient->config.on_read(xclient, buf->base, nread);
+        if(xclient->config.on_recv)
+            xclient->config.on_recv(xclient, buf->base, nread);
 	} else if(nread < 0) {
 		if(xclient->config.log_err)
             fprintf(xclient->config.log_err, "\n!!! [uvx-client] %s on read error: %s\n", xclient->config.name, uv_strerror(nread));

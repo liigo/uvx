@@ -25,8 +25,8 @@ extern "C"	{
 //   a `uvx_udp_config_t` with some params and callbacks, then call `uvx_udp_start`.
 // - To define a logging service (which I call it xlog), just call `uvx_log_init`.
 //
-// There are a few predefined callbacks, such as on_conn_ok, on_conn_close, on_read, on_heartbeat, etc.
-// All these callbacks are optional. `on_read`/`on_recv` is the most useful callback.
+// There are a few predefined callbacks, such as on_conn_ok, on_conn_close, on_heartbeat, etc.
+// All callbacks are optional. Maybe `on_recv` is the most useful one you care about.
 //
 // by Liigo 2014-11.
 // http://github.com/liigo/uvx
@@ -42,7 +42,7 @@ typedef void (*UVX_S_ON_CONNECT_OK)        (uvx_server_t* xserver, uvx_server_co
 typedef void (*UVX_S_ON_CONNECT_FAIL)      (uvx_server_t* xserver, uvx_server_conn_t* conn);
 typedef void (*UVX_S_ON_CONNECTION_CLOSE)  (uvx_server_t* xserver, uvx_server_conn_t* conn);
 typedef void (*UVX_S_ON_ITER_CONN)         (uvx_server_t* xserver, uvx_server_conn_t* conn, void* userdata);
-typedef void (*UVX_S_ON_READ)              (uvx_server_t* xserver, uvx_server_conn_t* conn, void* data, ssize_t datalen);
+typedef void (*UVX_S_ON_RECV)              (uvx_server_t* xserver, uvx_server_conn_t* conn, void* data, ssize_t datalen);
 typedef void (*UVX_S_ON_HEARTBEAT)         (uvx_server_t* xserver, unsigned int index);
 
 typedef struct uvx_server_config_s {
@@ -57,7 +57,7 @@ typedef struct uvx_server_config_s {
     UVX_S_ON_CONNECT_FAIL      on_conn_fail;
     UVX_S_ON_CONNECTION_CLOSE  on_conn_close;
     UVX_S_ON_HEARTBEAT         on_heartbeat;
-    UVX_S_ON_READ              on_read;
+    UVX_S_ON_RECV              on_recv;
     // logs
     FILE* log_out;
     FILE* log_err;
@@ -110,7 +110,7 @@ typedef struct uvx_client_s uvx_client_t;
 typedef void (*UVX_C_ON_CONNECT_OK)        (uvx_client_t* xclient);
 typedef void (*UVX_C_ON_CONNECT_FAIL)      (uvx_client_t* xclient);
 typedef void (*UVX_C_ON_CONNECTION_CLOSE)  (uvx_client_t* xclient);
-typedef void (*UVX_C_ON_READ)              (uvx_client_t* xclient, void* data, ssize_t datalen);
+typedef void (*UVX_C_ON_RECV)              (uvx_client_t* xclient, void* data, ssize_t datalen);
 typedef void (*UVX_C_ON_HEARTBEAT)         (uvx_client_t* xclient, unsigned int index);
 
 typedef struct uvx_client_config_s {
@@ -121,7 +121,7 @@ typedef struct uvx_client_config_s {
     UVX_C_ON_CONNECT_OK        on_conn_ok;
     UVX_C_ON_CONNECT_FAIL      on_conn_fail;
     UVX_C_ON_CONNECTION_CLOSE  on_conn_close;
-    UVX_C_ON_READ              on_read;
+    UVX_C_ON_RECV              on_recv;
     UVX_C_ON_HEARTBEAT         on_heartbeat;
     // logs
     FILE* log_out;
