@@ -94,8 +94,8 @@ int uvx_server_start(uvx_server_t* xserver, uv_loop_t* loop, const char* ip, int
 // returns 1 on success, or 0 if fails.
 int uvx_server_shutdown(uvx_server_t* xserver);
 
-// iterate all connections if on_iter_conn != NULL, returns the number of connections.
-// returns 1 on success, or 0 if fails.
+// iterate all connections if on_iter_conn != NULL.
+// returns the number of connections.
 int uvx_server_iter_conns(uvx_server_t* xserver, UVX_S_ON_ITER_CONN on_iter_conn, void* userdata);
 
 // manager conn refcount manually, +1 or -1, free conn when refcount == 0. threadsafe.
