@@ -129,8 +129,8 @@ static void uvx__on_read(uv_stream_t* uvclient, ssize_t nread, const uv_buf_t* b
         if(xserver->config.on_recv)
             xserver->config.on_recv(xserver, conn, buf->base, nread);
 	} else if(nread < 0) {
-		if(xserver->config.log_err)
-        fprintf(xserver->config.log_err, "\n!!! [uvx-server] %s on recv error: %s\n", xserver->config.name, uv_strerror(nread));
+        if(xserver->config.log_err)
+            fprintf(xserver->config.log_err, "\n!!! [uvx-server] %s on recv error: %s\n", xserver->config.name, uv_strerror(nread));
 		_uv_disconnect_client(uvclient);
 	}
     free(buf->base);
