@@ -93,8 +93,10 @@ static int uvx__client_reconnect(uvx_client_t* xclient) {
 }
 
 static void uvx__after_close_client(uv_handle_t* handle) {
-    assert(handle->data);
     uvx_client_t* xclient = (uvx_client_t*) handle->data;
+    assert(handle->data);
+    if(xclient->config.on_conn_close)
+        xclient->config.on_conn_close(xclient);
     xclient->uvserver = NULL;
     UVX__C_PRIVATE(xclient)->connection_closed = 1;
 }
@@ -102,8 +104,8 @@ static void uvx__after_close_client(uv_handle_t* handle) {
 static void _uvx_client_close(uvx_client_t* xclient) {
     if(xclient->config.log_out)
         fprintf(xclient->config.log_out, "[uvx-client] %s on close\n", xclient->config.name);
-    if(xclient->config.on_conn_close)
-        xclient->config.on_conn_close(xclient);
+    if(xclient->config.on_conn_closing)
+        xclient->config.on_conn_closing(xclient);
     uv_close((uv_handle_t*) &xclient->uvclient, uvx__after_close_client);
 
 	// heartbeat_timer is reused to re-connect on next uvx__on_heartbeat_timer(), do not stop it.

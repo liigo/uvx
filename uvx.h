@@ -38,12 +38,13 @@ extern "C"	{
 typedef struct uvx_server_s uvx_server_t;
 typedef struct uvx_server_conn_s uvx_server_conn_t;
 
-typedef void (*UVX_S_ON_CONNECT_OK)        (uvx_server_t* xserver, uvx_server_conn_t* conn);
-typedef void (*UVX_S_ON_CONNECT_FAIL)      (uvx_server_t* xserver, uvx_server_conn_t* conn);
-typedef void (*UVX_S_ON_CONNECTION_CLOSE)  (uvx_server_t* xserver, uvx_server_conn_t* conn);
-typedef void (*UVX_S_ON_ITER_CONN)         (uvx_server_t* xserver, uvx_server_conn_t* conn, void* userdata);
-typedef void (*UVX_S_ON_RECV)              (uvx_server_t* xserver, uvx_server_conn_t* conn, void* data, ssize_t datalen);
-typedef void (*UVX_S_ON_HEARTBEAT)         (uvx_server_t* xserver, unsigned int index);
+typedef void (*UVX_S_ON_CONN_OK)        (uvx_server_t* xserver, uvx_server_conn_t* conn);
+typedef void (*UVX_S_ON_CONN_FAIL)      (uvx_server_t* xserver, uvx_server_conn_t* conn);
+typedef void (*UVX_S_ON_CONN_CLOSING)   (uvx_server_t* xserver, uvx_server_conn_t* conn);
+typedef void (*UVX_S_ON_CONN_CLOSE)     (uvx_server_t* xserver, uvx_server_conn_t* conn);
+typedef void (*UVX_S_ON_ITER_CONN)      (uvx_server_t* xserver, uvx_server_conn_t* conn, void* userdata);
+typedef void (*UVX_S_ON_RECV)           (uvx_server_t* xserver, uvx_server_conn_t* conn, void* data, ssize_t datalen);
+typedef void (*UVX_S_ON_HEARTBEAT)      (uvx_server_t* xserver, unsigned int index);
 
 typedef struct uvx_server_config_s {
     char name[32];    // the xserver's name (with-ending-'\0')
@@ -53,11 +54,12 @@ typedef struct uvx_server_config_s {
     float conn_timeout_seconds; // if > 0, timeout-ed connections will be closed
     float heartbeat_interval_seconds; // used by heartbeat timer
     // callbacks
-    UVX_S_ON_CONNECT_OK        on_conn_ok;
-    UVX_S_ON_CONNECT_FAIL      on_conn_fail;
-    UVX_S_ON_CONNECTION_CLOSE  on_conn_close;
-    UVX_S_ON_HEARTBEAT         on_heartbeat;
-    UVX_S_ON_RECV              on_recv;
+    UVX_S_ON_CONN_OK        on_conn_ok;
+    UVX_S_ON_CONN_FAIL      on_conn_fail;
+    UVX_S_ON_CONN_CLOSING   on_conn_closing;
+    UVX_S_ON_CONN_CLOSE     on_conn_close;
+    UVX_S_ON_HEARTBEAT      on_heartbeat;
+    UVX_S_ON_RECV           on_recv;
     // logs
     FILE* log_out;
     FILE* log_err;
@@ -107,22 +109,24 @@ void uvx_server_conn_ref(uvx_server_conn_t* conn, int ref);
 typedef struct uvx_client_s uvx_client_t;
 
 //TODO: combine UVX_C_ON_CONNECT_* to UVX_C_ON_CONNECT
-typedef void (*UVX_C_ON_CONNECT_OK)        (uvx_client_t* xclient);
-typedef void (*UVX_C_ON_CONNECT_FAIL)      (uvx_client_t* xclient);
-typedef void (*UVX_C_ON_CONNECTION_CLOSE)  (uvx_client_t* xclient);
-typedef void (*UVX_C_ON_RECV)              (uvx_client_t* xclient, void* data, ssize_t datalen);
-typedef void (*UVX_C_ON_HEARTBEAT)         (uvx_client_t* xclient, unsigned int index);
+typedef void (*UVX_C_ON_CONN_OK)        (uvx_client_t* xclient);
+typedef void (*UVX_C_ON_CONN_FAIL)      (uvx_client_t* xclient);
+typedef void (*UVX_C_ON_CONN_CLOSING)   (uvx_client_t* xclient);
+typedef void (*UVX_C_ON_CONN_CLOSE)     (uvx_client_t* xclient);
+typedef void (*UVX_C_ON_RECV)           (uvx_client_t* xclient, void* data, ssize_t datalen);
+typedef void (*UVX_C_ON_HEARTBEAT)      (uvx_client_t* xclient, unsigned int index);
 
 typedef struct uvx_client_config_s {
     char name[32];    // the xclient's name (with-ending-'\0')
     int auto_connect; // 1: on, 0: off
     float heartbeat_interval_seconds;
     // callbacks
-    UVX_C_ON_CONNECT_OK        on_conn_ok;
-    UVX_C_ON_CONNECT_FAIL      on_conn_fail;
-    UVX_C_ON_CONNECTION_CLOSE  on_conn_close;
-    UVX_C_ON_RECV              on_recv;
-    UVX_C_ON_HEARTBEAT         on_heartbeat;
+    UVX_C_ON_CONN_OK       on_conn_ok;
+    UVX_C_ON_CONN_FAIL     on_conn_fail;
+    UVX_C_ON_CONN_CLOSING  on_conn_closing;
+    UVX_C_ON_CONN_CLOSE    on_conn_close;
+    UVX_C_ON_RECV          on_recv;
+    UVX_C_ON_HEARTBEAT     on_heartbeat;
     // logs
     FILE* log_out;
     FILE* log_err;

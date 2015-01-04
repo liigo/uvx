@@ -130,7 +130,7 @@ static void uvx__on_read(uv_stream_t* uvclient, ssize_t nread, const uv_buf_t* b
             xserver->config.on_recv(xserver, conn, buf->base, nread);
 	} else if(nread < 0) {
 		if(xserver->config.log_err)
-        fprintf(xserver->config.log_err, "\n!!! [uvx-server] %s on read error: %s\n", xserver->config.name, uv_strerror(nread));
+        fprintf(xserver->config.log_err, "\n!!! [uvx-server] %s on recv error: %s\n", xserver->config.name, uv_strerror(nread));
 		_uv_disconnect_client(uvclient);
 	}
     free(buf->base);
@@ -180,6 +180,8 @@ static void uvx__on_connection(uv_stream_t* uvserver, int status) {
                 xserver->config.on_conn_ok(xserver, conn);
 			uv_read_start((uv_stream_t*) &conn->uvclient, uvx__on_alloc_buf, uvx__on_read);
 		} else {
+            if(xserver->config.on_conn_fail)
+                xserver->config.on_conn_fail(conn->xserver, conn);
 			uv_close((uv_handle_t*) &conn->uvclient, _uv_after_close_connection);
 		}
 	} else {
@@ -190,8 +192,11 @@ static void uvx__on_connection(uv_stream_t* uvserver, int status) {
 
 static void _uv_disconnect_client(uv_stream_t* uvclient) {
 	uvx_server_conn_t* conn = (uvx_server_conn_t*) uvclient->data;
-	assert(uvclient == (uv_stream_t*) &conn->uvclient);
+	assert(conn && ((uv_stream_t*)&conn->uvclient == uvclient));
 	uv_read_stop(uvclient);
+    assert(conn->xserver);
+    if(conn->xserver->config.on_conn_closing)
+        conn->xserver->config.on_conn_closing(conn->xserver, conn);
 	uv_close((uv_handle_t*)uvclient, _uv_after_close_connection);
 }
 
