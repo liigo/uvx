@@ -1,6 +1,10 @@
 #include "../uvx.h"
 #include <string.h>
-#include <unistd.h>
+#ifdef __unix__
+	#include <unistd.h>
+#else
+	#define sleep(n) Sleep((n)*1000)
+#endif
 
 // 运行本程序的两个进程：
 // 第一个：./udpecho

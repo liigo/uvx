@@ -250,6 +250,13 @@ unsigned int
 uvx_log_serialize(uvx_log_t* xlog, void* buf, unsigned int bufsize,
                   int level, const char* tags, const char* msg, const char* file, int line);
 
+// the binary version of `uvx_log_serialize`, `msg` is a binary data instead of a text.
+// returns 0 if the msg's size is too long.
+// see `uvx_log_serialize` for more details.
+unsigned int
+uvx_log_serialize_bin(uvx_log_t* xlog, void* buf, unsigned int bufsize, int level, const char* tags,
+                      const void* msg, unsigned int msglen, const char* file, int line);
+
 // send a serialized log to target through UDP.
 // the parameter `data`/`datalen` must be serialized by `uvx_log_serialize` before.
 // returns 1 on success, or 0 if fails.
@@ -306,6 +313,13 @@ const char* uvx_get_tcp_ip_port(uv_tcp_t* uvclient, char* ipbuf, int buflen, int
 
 // send mem to a libuv tcp stream. don't use mem any more after this call.
 int uvx_send_mem(automem_t* mem, uv_stream_t* stream);
+
+
+#if defined(_WIN32) && !defined(__GNUC__)
+#include <stdarg.h>
+// Emulate snprintf() on Windows, _snprintf() doesn't zero-terminate the buffer on overflow...
+int snprintf(char* buf, size_t len, const char* fmt, ...);
+#endif
 
 #ifdef __cplusplus
 } // extern "C"

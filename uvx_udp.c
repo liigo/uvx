@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <memory.h>
+#include <time.h>
 #include <assert.h>
 
 #include "uvx.h"
@@ -50,7 +51,7 @@ int uvx_udp_start(uvx_udp_t* xudp, uv_loop_t* loop, const char* ip, int port, uv
 
         if(r >= 0 && config.log_out) {
             char timestr[32]; time_t t; time(&t);
-            strftime(timestr, sizeof(timestr), "[%F %X]", localtime(&t));
+            strftime(timestr, sizeof(timestr), "[%Y-%m-%d %X]", localtime(&t)); // C99 only: %F = %Y-%m-%d
             fprintf(config.log_out, "[uvx-udp] %s %s bind on %s:%d ...\n", timestr, xudp->config.name, ip, port);
         }
         if(r < 0) {

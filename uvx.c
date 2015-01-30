@@ -5,8 +5,6 @@
 #include <assert.h>
 
 #include <uv.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 
 #include "utils/automem.h"
 
@@ -16,13 +14,13 @@ const char* uvx_get_ip_port(const struct sockaddr* addr, char* ipbuf, int buflen
     switch (addr->sa_family) {
     case AF_INET: {
             const struct sockaddr_in* addrin = (const struct sockaddr_in*) addr;
-            if(ipbuf) inet_ntop(AF_INET, &(addrin->sin_addr), ipbuf, buflen); // or use portable uv_inet_ntop()
+			if(ipbuf) uv_inet_ntop(AF_INET, &(addrin->sin_addr), ipbuf, buflen);
             if(port)  *port = (int) ntohs(addrin->sin_port);
             break;
         }
     case AF_INET6: {
             const struct sockaddr_in6* addrin = (const struct sockaddr_in6*) addr;
-            if(ipbuf) inet_ntop(AF_INET6, &(addrin->sin6_addr), ipbuf, buflen); // or use portable uv_inet_ntop()
+			if(ipbuf) uv_inet_ntop(AF_INET6, &(addrin->sin6_addr), ipbuf, buflen);
             if(port)  *port = (int) ntohs(addrin->sin6_port);
             break;
         }
@@ -30,6 +28,7 @@ const char* uvx_get_ip_port(const struct sockaddr* addr, char* ipbuf, int buflen
         if(port) *port = 0;
         return NULL;
     }
+	return ipbuf ? ipbuf : NULL;
 }
 
 int uvx_get_raw_ip_port(const struct sockaddr* addr, unsigned char* ipbuf, int* port) {
@@ -98,3 +97,26 @@ void uvx__on_alloc_buf(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf
 	buf->base = (char*) malloc(suggested_size);
 	buf->len  = buf->base ? suggested_size : 0;
 }
+
+#if defined(_WIN32) && !defined(__GNUC__)
+#include <stdarg.h>
+// Emulate snprintf() on Windows, _snprintf() doesn't zero-terminate the buffer on overflow...
+int snprintf(char* buf, size_t len, const char* fmt, ...) {
+	va_list ap;
+	int n;
+
+	va_start(ap, fmt);
+	n = _vsprintf_p(buf, len, fmt, ap);
+	va_end(ap);
+
+	/* It's a sad fact of life that no one ever checks the return value of
+	* snprintf(). Zero-terminating the buffer hopefully reduces the risk
+	* of gaping security holes.
+	*/
+	if (n < 0)
+		if (len > 0)
+			buf[0] = '\0';
+
+	return n;
+}
+#endif

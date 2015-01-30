@@ -67,7 +67,7 @@ int uvx_client_connect(uvx_client_t* xclient, uv_loop_t* loop, const char* ip, i
 
 	int ret = uvx__client_reconnect(xclient);
 
-    int timeout = config.heartbeat_interval_seconds * 1000; // in milliseconds
+    int timeout = (int)(config.heartbeat_interval_seconds * 1000); // in milliseconds
     UVX__C_PRIVATE(xclient)->heartbeat_index = 0;
     UVX__C_PRIVATE(xclient)->heartbeat_timer.data = xclient;
 	uv_timer_init(loop, &UVX__C_PRIVATE(xclient)->heartbeat_timer);

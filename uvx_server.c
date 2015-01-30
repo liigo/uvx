@@ -83,7 +83,7 @@ int uvx_server_start(uvx_server_t* xserver, uv_loop_t* loop, const char* ip, int
 	int ret = uv_listen((uv_stream_t*)&xserver->uvserver, config.conn_backlog, uvx__on_connection);
     if(ret >= 0 && config.log_out) {
         char timestr[32]; time_t t; time(&t);
-        strftime(timestr, sizeof(timestr), "[%F %X]", localtime(&t));
+        strftime(timestr, sizeof(timestr), "[%Y-%m-%d %X]", localtime(&t)); // C99 only: %F = %Y-%m-%d
         fprintf(config.log_out, "[uvx-server] %s %s listening on %s:%d ...\n", timestr, xserver->config.name, ip, port);
     }
     if(ret < 0 && config.log_err)
@@ -202,7 +202,7 @@ static void _uv_disconnect_client(uv_stream_t* uvclient) {
 
 //检查长时间未通讯的客户端，主动断开连接
 static void _uvx_check_timeout_clients(uvx_server_t* xserver) {
-	int conn_timeout = xserver->config.conn_timeout_seconds * 1000; // in milliseconds
+	int conn_timeout = (int) (xserver->config.conn_timeout_seconds * 1000); // in milliseconds
     if(conn_timeout <= 0)
         return;
 	struct lh_entry *e, *tmp;
