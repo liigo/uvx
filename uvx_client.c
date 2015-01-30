@@ -123,7 +123,7 @@ static void uvx__on_client_read(uv_stream_t* uvserver, ssize_t nread, const uv_b
             xclient->config.on_recv(xclient, buf->base, nread);
 	} else if(nread < 0) {
 		if(xclient->config.log_err)
-            fprintf(xclient->config.log_err, "\n!!! [uvx-client] %s on read error: %s\n", xclient->config.name, uv_strerror(nread));
+            fprintf(xclient->config.log_err, "\n!!! [uvx-client] %s on recv error: %s\n", xclient->config.name, uv_strerror(nread));
 		_uvx_client_close(xclient); // will try reconnect on next uvx__on_heartbeat_timer()
 	}
     free(buf->base);
