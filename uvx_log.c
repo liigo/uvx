@@ -50,6 +50,15 @@ int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, 
 }
 
 UVXLOG_INLINE
+int uvx_log_send_bin(uvx_log_t* xlog, int level, const char* tags,
+                     const void* msg, unsigned int msglen, const char* file, int line) {
+	char buf[LOGE_MAXBUF];
+	unsigned int size = loge_item_bin(&xlog->loge, buf, sizeof(buf), level, tags, msg, msglen, file, line);
+	// send out through udp
+	return uvx_udp_send_to_addr(&xlog->xudp, &xlog->target_addr.addr, buf, size);
+}
+
+UVXLOG_INLINE
 int uvx_log_send_serialized(uvx_log_t* xlog, const void* data, unsigned int datalen) {
     return uvx_udp_send_to_addr(&xlog->xudp, &xlog->target_addr.addr, data, datalen);
 }

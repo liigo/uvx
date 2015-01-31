@@ -237,6 +237,11 @@ int uvx_log_init(uvx_log_t* xlog, uv_loop_t* loop, const char* target_ip, int ta
 // note: be limited by libuv, we should call `uvx_log_send` only in its main loop thread.
 int uvx_log_send(uvx_log_t* xlog, int level, const char* tags, const char* msg, const char* file, int line);
 
+// the binary version of `uvx_log_send`, `msg` is a binary data instead of a text.
+// see `uvx_log_send` for more details.
+int uvx_log_send_bin(uvx_log_t* xlog, int level, const char* tags,
+                     const void* msg, unsigned int msglen, const char* file, int line);
+
 // serialize a log into bytes stream, ready to be sent by `uvx_log_send_serialized` later.
 // buf and bufsize: an output buffer and its size, recommend 1024, can be smaller or larger.
 // the other parameters are as same as `uvx_log_send`.
@@ -258,7 +263,7 @@ uvx_log_serialize_bin(uvx_log_t* xlog, void* buf, unsigned int bufsize, int leve
                       const void* msg, unsigned int msglen, const char* file, int line);
 
 // send a serialized log to target through UDP.
-// the parameter `data`/`datalen` must be serialized by `uvx_log_serialize` before.
+// the parameter `data`/`datalen` must be serialized by `uvx_log_serialize[_bin]` before.
 // returns 1 on success, or 0 if fails.
 // note: be limited by libuv, we should call `uvx_log_send_serialized` only in its main loop thread.
 int uvx_log_send_serialized(uvx_log_t* xlog, const void* data, unsigned int datalen);
