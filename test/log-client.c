@@ -61,7 +61,7 @@ void main(int argc, char** argv) {
     }
 
     // init log client
-    uvx_log_init(&xlog, loop, "127.0.0.1", 19730, "xlog-test");
+    uvx_log_init(&xlog, loop, "127.0.0.1", 8004, "xlog-test");
 
     // some small tests
     test_shorten_path();
