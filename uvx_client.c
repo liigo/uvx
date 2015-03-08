@@ -76,6 +76,13 @@ int uvx_client_connect(uvx_client_t* xclient, uv_loop_t* loop, const char* ip, i
 	return ret;
 }
 
+int uvx_client_send(uvx_client_t* xclient, void* data, unsigned int size) {
+	if (xclient->uvserver)
+		return uvx_send_to_stream((uv_stream_t*)xclient->uvserver, data, size);
+	else
+		return 0;
+}
+
 static void _uv_on_connect(uv_connect_t* conn, int status);
 
 static int uvx__client_reconnect(uvx_client_t* xclient) {

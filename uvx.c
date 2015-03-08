@@ -65,6 +65,26 @@ const char* uvx_get_tcp_ip_port(uv_tcp_t* uvclient, char* ipbuf, int buflen, int
 	}
 }
 
+static void uvx_after_send_to_stream(uv_write_t* w, int status) {
+    if(status) {
+        puts("\n!!! [uvx] uvx_after_send_to_stream(,-1) failed");
+    }
+    //see uvx_send_to_stream()
+    free(w->data);
+    free(w);
+}
+
+// Note: after this call, do not use `data` anymore, its memory will be `free`ed later.
+int uvx_send_to_stream(uv_stream_t* stream, void* data, unsigned int size) {
+    // puts("uvx_send_to_stream()\n");
+    assert(stream && data);
+    uv_buf_t buf = { .base = (char*)data, .len = (size_t)size };
+    uv_write_t* w = (uv_write_t*) malloc(sizeof(uv_write_t));
+    memset(w, 0, sizeof(uv_write_t));
+    w->data = data; // free it in uvx_after_send_to_stream()
+    return (uv_write(w, stream, &buf, 1, uvx_after_send_to_stream) == 0 ? 1 : 0);
+}
+
 static void uvx_after_send_mem(uv_write_t* w, int status) {
     if(status) {
         puts("\n!!! [uvx] uvx_after_send_mem(,-1) failed");
@@ -78,6 +98,7 @@ static void uvx_after_send_mem(uv_write_t* w, int status) {
     free(w);
 }
 
+// Deprecated, use uvx_send_to_stream() instead.
 // Note: after invoke uvx_send_mem(), do not use mem anymore, its memory will be freed later.
 int uvx_send_mem(automem_t* mem, uv_stream_t* stream) {
     // puts("uvx_send_mem()\n");

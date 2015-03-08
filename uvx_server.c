@@ -113,6 +113,10 @@ void uvx_server_conn_ref(uvx_server_conn_t* conn, int ref) {
     uv_mutex_unlock(&conn->refmutex);
 }
 
+int uvx_server_conn_send(uvx_server_conn_t* conn, void* data, unsigned int size) {
+	return uvx_send_to_stream((uv_stream_t*)&conn->uvclient, data, size);
+}
+
 static void uvx__on_read(uv_stream_t* uvclient, ssize_t nread, const uv_buf_t* buf) {
     uvx_server_conn_t* conn = (uvx_server_conn_t*) uvclient->data;
     assert(conn);

@@ -103,6 +103,12 @@ int uvx_server_iter_conns(uvx_server_t* xserver, UVX_S_ON_ITER_CONN on_iter_conn
 // manager conn refcount manually, +1 or -1, free conn when refcount == 0. threadsafe.
 void uvx_server_conn_ref(uvx_server_conn_t* conn, int ref);
 
+// send data to tcp client (not only xclient) of the connection.
+// don't use `data` any more, it will be `free`ed later.
+// please make sure that `data` was `malloc`ed before, so that it can be `free`ed correctly.
+// returns 1 on success, or 0 if fails.
+int uvx_server_conn_send(uvx_server_conn_t* conn, void* data, unsigned int size);
+
 //-----------------------------------------------
 // uvx tcp client: `uvx_client_t`
 
@@ -149,6 +155,12 @@ uvx_client_config_t uvx_client_default_config(uvx_client_t* xclient);
 // please pass in uninitialized xclient and initialized config.
 // returns 1 on success, or 0 if fails.
 int uvx_client_connect(uvx_client_t* xclient, uv_loop_t* loop, const char* ip, int port, uvx_client_config_t config);
+
+// send data to the connected tcp server (not only xserver).
+// don't use `data` any more, it will be `free`ed later.
+// please make sure that `data` was `malloc`ed before, so that it can be `free`ed correctly.
+// returns 1 on success, or 0 if fails.
+int uvx_client_send(uvx_client_t* xclient, void* data, unsigned int size);
 
 
 //-----------------------------------------------
@@ -316,7 +328,12 @@ int uvx_get_raw_ip_port(const struct sockaddr* addr, unsigned char* ipbuf, int* 
 // support IPv4 (buflen = 16) and IPv6 (buflen = 40).
 const char* uvx_get_tcp_ip_port(uv_tcp_t* uvclient, char* ipbuf, int buflen, int* port);
 
-// send mem to a libuv tcp stream. don't use mem any more after this call.
+// send data to a libuv stream. don't use `data` any more, it will be `free`ed later.
+// please make sure that `data` was `malloc`ed before, so that it can be `free`ed correctly.
+// returns 1 on success, or 0 if fails.
+int uvx_send_to_stream(uv_stream_t* stream, void* data, unsigned int size);
+
+// deprecated, use uvx_send_to_stream() instead.
 int uvx_send_mem(automem_t* mem, uv_stream_t* stream);
 
 
