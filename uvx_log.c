@@ -14,8 +14,7 @@ int uvx_log_init(uvx_log_t* xlog, uv_loop_t* loop, const char* target_ip, int ta
     }
 
     loge_init(&xlog->loge, name);
-    uvx_udp_start(&xlog->xudp, loop, NULL, 0, uvx_udp_default_config(&xlog->xudp));
-    return 1;
+    return uvx_udp_start(&xlog->xudp, loop, NULL, 0, uvx_udp_default_config(&xlog->xudp));
 }
 
 #if defined(_MSC_VER)
