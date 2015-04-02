@@ -92,7 +92,7 @@ uvx_server_config_t uvx_server_default_config(uvx_server_t* xserver);
 // returns 1 on success, or 0 if fails.
 int uvx_server_start(uvx_server_t* xserver, uv_loop_t* loop, const char* ip, int port, uvx_server_config_t config);
 
-// shutdown an xserver normally.
+// shutdown the xserver normally.
 // returns 1 on success, or 0 if fails.
 int uvx_server_shutdown(uvx_server_t* xserver);
 
@@ -162,6 +162,13 @@ int uvx_client_connect(uvx_client_t* xclient, uv_loop_t* loop, const char* ip, i
 // returns 1 on success, or 0 if fails.
 int uvx_client_send(uvx_client_t* xclient, void* data, unsigned int size);
 
+// disconnect the current connection (and it will re-connect at next heartbeat timer).
+// returns 1 on success, or 0 if fails.
+int uvx_client_disconnect(uvx_client_t* xclient);
+
+// shutdown the xclient normally.
+// returns 1 on success, or 0 if fails.
+int uvx_client_shutdown(uvx_client_t* xclient);
 
 //-----------------------------------------------
 // uvx udp: `uvx_udp_t`
