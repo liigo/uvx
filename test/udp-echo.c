@@ -14,7 +14,7 @@
 
 static void on_recv(uvx_udp_t* xudp, void* data, ssize_t datalen, const struct sockaddr* addr, unsigned int flag) {
     char ip[16]; int port; uvx_get_ip_port(addr, ip, sizeof(ip), &port);
-    printf("recv: %s  size: %d  from %s:%d \n", data, datalen, ip, port);
+    printf("recv: %p  size: %d  from %s:%d \n", data, datalen, ip, port);
     int x = atoi(data);
     char newdata[16]; sprintf(newdata, "%d", x + 1);
     uvx_udp_send_to_addr(xudp, addr, newdata, strlen(newdata) + 1);
