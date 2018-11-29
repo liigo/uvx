@@ -163,12 +163,15 @@ static void _uv_on_connect(uv_connect_t* conn, int status) {
 }
 
 int uvx_client_disconnect(uvx_client_t* xclient) {
-	_uvx_client_close(xclient);
+	if(xclient->uvserver)
+		_uvx_client_close(xclient);
 	return 1;
 }
 
 int uvx_client_shutdown(uvx_client_t* xclient) {
-	uv_timer_stop(&UVX__C_PRIVATE(xclient)->heartbeat_timer);
-	_uvx_client_close(xclient);
+	uv_timer_t* heartbeat_timer = &UVX__C_PRIVATE(xclient)->heartbeat_timer;
+	uv_timer_stop(heartbeat_timer);
+	uv_close((uv_handle_t*)heartbeat_timer, NULL);
+	uvx_client_disconnect(xclient);
 	return 1;
 }
