@@ -2,7 +2,7 @@
 #include <math.h>
 #include <assert.h>
 
-// Author: Liigo <com.liigo@gmail.com>, 201407.
+// Author: Liigo <liigo@qq.com>, 201407.
 
 int uvx_log_init(uvx_log_t* xlog, uv_loop_t* loop, const char* target_ip, int target_port, const char* name) {
     xlog->uvloop = loop;

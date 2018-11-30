@@ -7,7 +7,7 @@
 
 #include "uvx.h"
 
-// Author: Liigo <com.liigo@gmail.com>.
+// Author: Liigo <liigo@qq.com>.
 
 // defines in uvx.c
 void uvx__on_alloc_buf(uv_handle_t* handle, size_t suggested_size, uv_buf_t* buf);

@@ -2,7 +2,7 @@
 #include <time.h>
 
 // logc, to generate and send uvx logs
-// Author: Liigo <com.liigo@gmail.com>
+// Author: Liigo <liigo@qq.com>
 // Usage:
 //   ./logc         Send a log  per 10 seconds
 //   ./logc x       Send x logs per 10 seconds

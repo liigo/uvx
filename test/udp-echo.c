@@ -10,7 +10,7 @@
 // 第一个：./udpecho
 // 第二个: ./udpecho 127.0.0.1
 // 然后两者会互发信息（一方收到消息会立刻答复给对方），如此无限循环下去
-// 作者: Liigo <com.liigo@gmail.com>
+// 作者: Liigo <liigo@qq.com>
 
 static void on_recv(uvx_udp_t* xudp, void* data, ssize_t datalen, const struct sockaddr* addr, unsigned int flag) {
     char ip[16]; int port; uvx_get_ip_port(addr, ip, sizeof(ip), &port);

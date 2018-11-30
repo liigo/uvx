@@ -8,7 +8,7 @@
 
 #include "utils/automem.h"
 
-// Author: Liigo <com.liigo@gmail.com>.
+// Author: Liigo <liigo@qq.com>
 
 const char* uvx_get_ip_port(const struct sockaddr* addr, char* ipbuf, int buflen, int* port) {
     switch (addr->sa_family) {
@@ -60,14 +60,14 @@ const char* uvx_get_tcp_ip_port(uv_tcp_t* uvclient, char* ipbuf, int buflen, int
 	if(r == 0) {
 		return uvx_get_ip_port(&addr, ipbuf, buflen, port);
 	} else {
-        printf("\n!!! [uvx] get client ip fails: %s\n", uv_strerror(r));
+        printf("\n!!! [uvx] get client ip failed: %s\n", uv_strerror(r));
 		return NULL;
 	}
 }
 
 static void uvx_after_send_to_stream(uv_write_t* w, int status) {
     if(status) {
-        puts("\n!!! [uvx] uvx_after_send_to_stream(,-1) failed");
+        printf("\n!!! [uvx] uvx_send_to_stream() failed or canceled: %d\n", status);
     }
     //see uvx_send_to_stream()
     free(w->data);
@@ -87,7 +87,7 @@ int uvx_send_to_stream(uv_stream_t* stream, void* data, unsigned int size) {
 
 static void uvx_after_send_mem(uv_write_t* w, int status) {
     if(status) {
-        puts("\n!!! [uvx] uvx_after_send_mem(,-1) failed");
+        printf("\n!!! [uvx] uvx_send_mem() failed or canceled: %d\n", status);
     }
 
     //see uxv_send_mem()

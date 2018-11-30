@@ -9,7 +9,7 @@
 #include "utils/automem.h"
 #include "utils/linkhash.h"
 
-// Author: Liigo <com.liigo@gmail.com>.
+// Author: Liigo <liigo@qq.com>
 
 //! Note: modify this struct along with uvx_server_t.privates!
 typedef struct uvx_server_private_s {

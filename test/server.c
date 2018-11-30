@@ -1,6 +1,6 @@
 ﻿#include "../uvx.h"
 
-// Author: Liigo <com.liigo@gmail.com>
+// Author: Liigo <liigo@qq.com>
 
 static void on_recv(uvx_server_t* xserver, uvx_server_conn_t* conn, void* data, ssize_t datalen) {
     char ip[40]; int port;

@@ -2,7 +2,7 @@
 #define LIIGO_LOGE_HEADER
 
 // Loge: a logging protocol focus on serializing log items.
-// Author: Liigo <com.liigo@gmail.com>, 201412.
+// Author: Liigo <liigo@qq.com>, 201412.
 // https://github.com/liigo/loge
 
 #ifdef __cplusplus

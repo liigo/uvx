@@ -1,6 +1,6 @@
 ﻿#include "../uvx.h"
 
-// Author: Liigo <com.liigo@gmail.com>
+// Author: Liigo <liigo@qq.com>
 // Usage:
 //   ./client         Send 1 data  per 10 seconds
 //   ./client x       Send x datas per 10 seconds

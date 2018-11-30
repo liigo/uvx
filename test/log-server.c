@@ -3,7 +3,7 @@
 #include <time.h>
 
 // logs, to receive and print loge loggings.
-// Author: Liigo <com.liigo@gmail.com>
+// Author: Liigo <liigo@qq.com>
 
 static unsigned int log_count = 1;
 static char timestr_buf[32];

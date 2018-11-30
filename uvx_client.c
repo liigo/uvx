@@ -8,7 +8,7 @@
 #include "utils/automem.h"
 #include "utils/linkhash.h"
 
-// Author: Liigo <com.liigo@gmail.com>.
+// Author: Liigo <liigo@qq.com>
 
 typedef union uvx_sockaddr_4_6_s{
     struct sockaddr_in  in4;
