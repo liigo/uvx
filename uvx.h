@@ -197,14 +197,15 @@ struct uvx_udp_s {
 // returns the default config for xudp, used by uvx_udp_start().
 uvx_udp_config_t uvx_udp_default_config(uvx_udp_t* xudp);
 
-// start the udp service bind on ip:port. support IPv4 and IPv6.
+// start a udp service binding on ip and port. support IPv4 and IPv6.
 // if ip == NULL, bind to local random port automatically.
 // please pass in uninitialized xudp and initialized config.
 // returns 1 on success, or 0 if fails.
 int uvx_udp_start(uvx_udp_t* xudp, uv_loop_t* loop, const char* ip, int port, uvx_udp_config_t config);
 
 // send data through udp. support IPv4 and IPv6.
-// will copy data internally, so caller can take it easy to free it after this call.
+// `data` is not limited to be `malloc`ed, unlike `uvx_server_send`/`uvx_client_send`.
+// `data` is copy to internal buffer, so you can free it if needed after this call.
 int uvx_udp_send_to_ip(uvx_udp_t* xudp, const char* ip, int port, const void* data, unsigned int datalen);
 int uvx_udp_send_to_addr(uvx_udp_t* xudp, const struct sockaddr* addr, const void* data, unsigned int datalen);
 
