@@ -159,6 +159,7 @@ int uvx_client_connect(uvx_client_t* xclient, uv_loop_t* loop, const char* ip, i
 // send data to the connected tcp server (not only xserver).
 // don't use `data` any more, it will be `free`ed later.
 // please make sure that `data` was `malloc`ed before, so that it can be `free`ed correctly.
+// if no server is connected, free data immediately, to avoid memory leak.
 // returns 1 on success, or 0 if fails.
 int uvx_client_send(uvx_client_t* xclient, void* data, unsigned int size);
 

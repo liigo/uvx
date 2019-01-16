@@ -77,10 +77,12 @@ int uvx_client_connect(uvx_client_t* xclient, uv_loop_t* loop, const char* ip, i
 }
 
 int uvx_client_send(uvx_client_t* xclient, void* data, unsigned int size) {
-	if (xclient->uvserver)
+	if (xclient->uvserver) {
 		return uvx_send_to_stream((uv_stream_t*)xclient->uvserver, data, size);
-	else
+	} else {
+		free(data);
 		return 0;
+	}
 }
 
 static void _uv_on_connect(uv_connect_t* conn, int status);
